@@ -9,9 +9,10 @@
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
-    "test": "jest",
-    "cdk": "cdk",
-    "lint": "ts-standardx --fix"
+    "test": "npm run lint && jest",
+    "lint": "ts-standardx --fix",
+    "synth": "cdk synth > cdk.synth.yml",
+    "deploy": "npm run test && cdk deploy -y"
   },
   "devDependencies": {
     "@aws-cdk/assert": "1.101.0",
@@ -20,6 +21,7 @@
     "@types/node": "10.17.27",
     "aws-cdk": "1.101.0",
     "aws-sdk": "^2.897.0",
+    "esbuild": "^0.11.18",
     "eslint": "^7.25.0",
     "jest": "^26.4.2",
     "ts-jest": "^26.2.0",
@@ -29,7 +31,9 @@
   },
   "dependencies": {
     "@aws-cdk/aws-apigateway": "^1.101.0",
+    "@aws-cdk/aws-ec2": "^1.101.0",
     "@aws-cdk/aws-lambda-nodejs": "^1.101.0",
+    "@aws-cdk/aws-rds": "^1.101.0",
     "@aws-cdk/aws-s3": "^1.101.0",
     "@aws-cdk/core": "1.101.0",
     "source-map-support": "^0.5.16"
