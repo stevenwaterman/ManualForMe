@@ -4,7 +4,7 @@
   "license": "Apache-2.0",
   "repository": "https://github.com/stevenwaterman/ManualForMe/",
   "bin": {
-    "manualforme": "bin/manualforme.js"
+    "manualforme": "bin/manualforme.ts"
   },
   "scripts": {
     "build": "tsc",
