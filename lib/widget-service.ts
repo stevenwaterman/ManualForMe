@@ -1,30 +1,72 @@
-import * as cdk from '@aws-cdk/core'
-import { LambdaIntegration, RestApi } from '@aws-cdk/aws-apigateway'
+import { Construct, Duration } from '@aws-cdk/core'
+import {
+  LambdaIntegration,
+  RestApi,
+  SecurityPolicy
+} from '@aws-cdk/aws-apigateway'
 import { NodejsFunction } from '@aws-cdk/aws-lambda-nodejs'
-import { Bucket } from '@aws-cdk/aws-s3'
-import { IVpc } from '@aws-cdk/aws-ec2'
+import { ManagedPolicy, Role, ServicePrincipal } from '@aws-cdk/aws-iam'
+import {
+  Certificate,
+  CertificateValidation
+} from '@aws-cdk/aws-certificatemanager'
+import { ARecord, HostedZone, RecordTarget } from '@aws-cdk/aws-route53'
+import { ApiGateway } from '@aws-cdk/aws-route53-targets'
 
-export class WidgetService extends cdk.Construct {
-  constructor(scope: cdk.Construct, id: string, vpc: IVpc) {
+export class WidgetService extends Construct {
+  constructor(scope: Construct, id: string) {
     super(scope, id)
 
-    const bucket = new Bucket(this, 'WidgetStore')
+    const zone = new HostedZone(this, 'HostedZone', {
+      zoneName: 'manualfor.me'
+    })
+
+    const certificate = new Certificate(this, 'Certificate', {
+      domainName: '*.manualfor.me',
+      validation: CertificateValidation.fromDns(zone)
+    })
 
     const api = new RestApi(this, 'widgets-api', {
       restApiName: 'Widget Service',
-      description: 'This service serves widgets.'
+      description: 'This service serves widgets.',
+      domainName: {
+        domainName: 'www.manualfor.me',
+        certificate,
+        securityPolicy: SecurityPolicy.TLS_1_2
+      }
+    })
+
+    const gateway = new ApiGateway(api)
+
+    const domainAlias = api.domainName?.domainNameAliasDomainName
+    if (domainAlias === undefined) throw new Error('Domain alias undefined')
+
+    new ARecord(this, 'ARecord', {
+      zone,
+      recordName: 'manualfor.me',
+      target: RecordTarget.fromAlias(gateway),
+      ttl: Duration.minutes(1)
+    })
+
+    const lambdaRole = new Role(this, 'DbAccessLambdaRole', {
+      assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
+      managedPolicies: [
+        ManagedPolicy.fromAwsManagedPolicyName('AmazonDynamoDBFullAccess'),
+        ManagedPolicy.fromAwsManagedPolicyName(
+          'service-role/AWSLambdaBasicExecutionRole'
+        )
+      ]
     })
 
     const lambdaProps = {
-      environment: { BUCKET: bucket.bucketName },
-      vpc
+      environment: {},
+      role: lambdaRole
     }
 
     const listHandler = new NodejsFunction(this, 'ListWidgetHandler', {
       entry: 'resources/widgets/list.ts',
       ...lambdaProps
     })
-    bucket.grantReadWrite(listHandler)
     api.root.addMethod('GET', new LambdaIntegration(listHandler))
 
     const idEndpoint = api.root.addResource('{id}')
@@ -33,21 +75,18 @@ export class WidgetService extends cdk.Construct {
       entry: 'resources/widgets/get.ts',
       ...lambdaProps
     })
-    bucket.grantReadWrite(getHandler)
     idEndpoint.addMethod('GET', new LambdaIntegration(getHandler))
 
     const addHandler = new NodejsFunction(this, 'AddWidgetHandler', {
       entry: 'resources/widgets/add.ts',
       ...lambdaProps
     })
-    bucket.grantReadWrite(addHandler)
     idEndpoint.addMethod('POST', new LambdaIntegration(addHandler))
 
     const deleteHandler = new NodejsFunction(this, 'DeleteWidgetHandler', {
       entry: 'resources/widgets/delete.ts',
       ...lambdaProps
     })
-    bucket.grantReadWrite(deleteHandler)
     idEndpoint.addMethod('DELETE', new LambdaIntegration(deleteHandler))
   }
 }

@@ -1,20 +1,15 @@
-import * as cdk from '@aws-cdk/core'
-import {
-  ServerlessCluster,
-  DatabaseClusterEngine,
-  AuroraPostgresEngineVersion
-} from '@aws-cdk/aws-rds'
-import { IVpc } from '@aws-cdk/aws-ec2'
+import { Construct, RemovalPolicy } from '@aws-cdk/core'
+import { AttributeType, BillingMode, Table } from '@aws-cdk/aws-dynamodb'
 
-export class Database extends cdk.Construct {
-  constructor(scope: cdk.Construct, id: string, vpc: IVpc) {
+export class Database extends Construct {
+  constructor(scope: Construct, id: string) {
     super(scope, id)
 
-    new ServerlessCluster(this, 'Database', {
-      engine: DatabaseClusterEngine.auroraPostgres({
-        version: AuroraPostgresEngineVersion.VER_10_14
-      }),
-      vpc
+    new Table(this, 'Table', {
+      tableName: 'widgets',
+      partitionKey: { name: 'username', type: AttributeType.STRING },
+      billingMode: BillingMode.PAY_PER_REQUEST,
+      removalPolicy: RemovalPolicy.DESTROY
     })
   }
 }

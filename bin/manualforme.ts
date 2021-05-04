@@ -1,8 +1,8 @@
 import 'source-map-support/register'
-import * as cdk from '@aws-cdk/core'
+import { App } from '@aws-cdk/core'
 import { ManualForMeStack } from '../lib/manualforme-stack'
 
-const app = new cdk.App()
+const app = new App()
 
 new ManualForMeStack(app, 'ManualForMeStack', {
   /* If you don't specify 'env', this stack will be environment-agnostic.

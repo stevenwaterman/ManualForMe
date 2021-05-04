@@ -1,15 +1,12 @@
-import * as AWS from 'aws-sdk'
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
+import { DynamoDB } from 'aws-sdk'
 
-const S3 = new AWS.S3()
-const bucketName = process.env.BUCKET
+const dynamoDB = new DynamoDB.DocumentClient()
 
 export async function handler(
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> {
   try {
-    if (bucketName === undefined) throw new Error('BUCKET not set')
-
     const widgetName = event.path.startsWith('/')
       ? event.path.substring(1)
       : event.path
@@ -19,20 +16,18 @@ export async function handler(
         body: 'Widget name missing'
       }
 
-    const data = await S3.getObject({
-      Bucket: bucketName,
-      Key: widgetName
-    }).promise()
-    if (data.Body === undefined)
-      return {
-        statusCode: 404,
-        body: 'Not Found'
-      }
+    const data = await dynamoDB
+      .get({
+        TableName: 'widgets',
+        Key: {
+          username: widgetName
+        }
+      })
+      .promise()
 
-    const body = data.Body
     return {
       statusCode: 200,
-      body: JSON.stringify(body)
+      body: JSON.stringify(data.Item)
     }
   } catch (error) {
     const body = error.stack ?? JSON.stringify(error, null, 2)
