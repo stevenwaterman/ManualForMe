@@ -14,10 +14,10 @@ import {
 } from '@aws-cdk/aws-certificatemanager'
 import { ARecord, HostedZone, RecordTarget } from '@aws-cdk/aws-route53'
 import { ApiGateway } from '@aws-cdk/aws-route53-targets'
-import { IUserPool } from '@aws-cdk/aws-cognito'
+import { UserPool } from '@aws-cdk/aws-cognito'
 
 export class WidgetService extends Construct {
-  constructor(scope: Construct, id: string, pool: IUserPool) {
+  constructor(scope: Construct, id: string, pool: UserPool) {
     super(scope, id)
 
     const zone = new HostedZone(this, 'HostedZone', {
@@ -57,6 +57,12 @@ export class WidgetService extends Construct {
 
     new ARecord(this, 'ARecord', {
       zone,
+      target: RecordTarget.fromAlias(gateway)
+    })
+
+    new ARecord(this, 'ARecord2', {
+      zone,
+      recordName: 'www.manualfor.me',
       target: RecordTarget.fromAlias(gateway)
     })
 

@@ -1,4 +1,8 @@
-import { UserPool } from '@aws-cdk/aws-cognito'
+import {
+  OAuthScope,
+  UserPool,
+  UserPoolClientIdentityProvider
+} from '@aws-cdk/aws-cognito'
 import { Construct, RemovalPolicy } from '@aws-cdk/core'
 
 export class Auth extends Construct {
@@ -18,11 +22,7 @@ export class Auth extends Construct {
         },
         email: {
           mutable: true,
-          required: false
-        },
-        profilePicture: {
-          mutable: true,
-          required: false
+          required: true
         }
       },
       passwordPolicy: {
@@ -33,6 +33,32 @@ export class Auth extends Construct {
       },
       signInCaseSensitive: false,
       removalPolicy: RemovalPolicy.DESTROY
+    })
+
+    this.pool.addDomain('PoolDomain', {
+      cognitoDomain: {
+        domainPrefix: 'manualforme-auth'
+      }
+    })
+
+    this.pool.addClient('AppClient', {
+      generateSecret: true,
+      authFlows: {
+        adminUserPassword: true,
+        userPassword: true
+      },
+      preventUserExistenceErrors: true,
+      oAuth: {
+        flows: {
+          authorizationCodeGrant: true,
+          implicitCodeGrant: false,
+          clientCredentials: false
+        },
+        scopes: [OAuthScope.EMAIL, OAuthScope.PROFILE],
+        callbackUrls: ['https://manualfor.me/authSuccess'],
+        logoutUrls: ['https://manualfor.me/signedOut']
+      },
+      supportedIdentityProviders: [UserPoolClientIdentityProvider.COGNITO]
     })
   }
 }
