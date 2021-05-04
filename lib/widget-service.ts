@@ -2,71 +2,31 @@ import { Construct } from '@aws-cdk/core'
 import {
   AuthorizationType,
   CognitoUserPoolsAuthorizer,
+  IAuthorizer,
+  IResource,
   LambdaIntegration,
-  RestApi,
-  SecurityPolicy
+  RestApi
 } from '@aws-cdk/aws-apigateway'
 import { NodejsFunction } from '@aws-cdk/aws-lambda-nodejs'
 import { ManagedPolicy, Role, ServicePrincipal } from '@aws-cdk/aws-iam'
-import {
-  Certificate,
-  CertificateValidation
-} from '@aws-cdk/aws-certificatemanager'
-import { ARecord, HostedZone, RecordTarget } from '@aws-cdk/aws-route53'
-import { ApiGateway } from '@aws-cdk/aws-route53-targets'
 import { UserPool } from '@aws-cdk/aws-cognito'
 
 export class WidgetService extends Construct {
-  constructor(scope: Construct, id: string, pool: UserPool) {
+  constructor(
+    scope: Construct,
+    id: string,
+    props: {
+      api: RestApi
+      pool: UserPool
+    }
+  ) {
     super(scope, id)
 
-    const zone = new HostedZone(this, 'HostedZone', {
-      zoneName: 'manualfor.me'
-    })
-
-    const certificate = new Certificate(this, 'Certificate', {
-      domainName: '*.manualfor.me',
-      validation: CertificateValidation.fromDns(zone)
-    })
-
     const authorizer = new CognitoUserPoolsAuthorizer(this, 'Authorizer', {
-      // Seems to be a versioning conflict in CDK here
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      cognitoUserPools: [pool as any]
+      cognitoUserPools: [props.pool]
     })
 
-    const authSettings = {
-      authorizer,
-      authorizationType: AuthorizationType.COGNITO
-    }
-
-    const api = new RestApi(this, 'widgets-api', {
-      restApiName: 'Widget Service',
-      description: 'This service serves widgets.',
-      domainName: {
-        domainName: 'www.manualfor.me',
-        certificate,
-        securityPolicy: SecurityPolicy.TLS_1_2
-      }
-    })
-
-    const gateway = new ApiGateway(api)
-
-    const domainAlias = api.domainName?.domainNameAliasDomainName
-    if (domainAlias === undefined) throw new Error('Domain alias undefined')
-
-    new ARecord(this, 'ARecord', {
-      zone,
-      target: RecordTarget.fromAlias(gateway)
-    })
-
-    new ARecord(this, 'ARecord2', {
-      zone,
-      recordName: 'www.manualfor.me',
-      target: RecordTarget.fromAlias(gateway)
-    })
-
-    const lambdaRole = new Role(this, 'DbAccessLambdaRole', {
+    const role = new Role(this, 'DbAccessLambdaRole', {
       assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
       managedPolicies: [
         ManagedPolicy.fromAwsManagedPolicyName('AmazonDynamoDBFullAccess'),
@@ -76,43 +36,59 @@ export class WidgetService extends Construct {
       ]
     })
 
-    const lambdaProps = {
-      environment: {},
-      role: lambdaRole
+    this.createLambda('list-widgets', {
+      endpoint: props.api.root,
+      method: 'GET',
+      entry: 'widgets/list.ts',
+      role,
+      authorizer
+    })
+
+    const idEndpoint = props.api.root.addResource('{id}')
+
+    this.createLambda('get-widget', {
+      endpoint: idEndpoint,
+      method: 'GET',
+      entry: 'widgets/get.ts',
+      role,
+      authorizer
+    })
+
+    this.createLambda('add-widget', {
+      endpoint: idEndpoint,
+      method: 'POST',
+      entry: 'widgets/add.ts',
+      role,
+      authorizer
+    })
+
+    this.createLambda('delete-widget', {
+      endpoint: idEndpoint,
+      method: 'DELETE',
+      entry: 'widgets/delete.ts',
+      role,
+      authorizer
+    })
+  }
+
+  private createLambda(
+    id: string,
+    props: {
+      endpoint: IResource
+      method: string
+      entry: string
+      role: Role
+      authorizer: IAuthorizer
     }
-
-    const listHandler = new NodejsFunction(this, 'ListWidgetHandler', {
-      entry: 'resources/widgets/list.ts',
-      ...lambdaProps
+  ): NodejsFunction {
+    const handler = new NodejsFunction(this, id, {
+      entry: `resources/${props.entry}`,
+      role: props.role
     })
-    api.root.addMethod('GET', new LambdaIntegration(listHandler), authSettings)
-
-    const idEndpoint = api.root.addResource('{id}')
-
-    const getHandler = new NodejsFunction(this, 'GetWidgetHandler', {
-      entry: 'resources/widgets/get.ts',
-      ...lambdaProps
+    props.endpoint.addMethod(props.method, new LambdaIntegration(handler), {
+      authorizationType: AuthorizationType.COGNITO,
+      authorizer: props.authorizer
     })
-    idEndpoint.addMethod('GET', new LambdaIntegration(getHandler), authSettings)
-
-    const addHandler = new NodejsFunction(this, 'AddWidgetHandler', {
-      entry: 'resources/widgets/add.ts',
-      ...lambdaProps
-    })
-    idEndpoint.addMethod(
-      'POST',
-      new LambdaIntegration(addHandler),
-      authSettings
-    )
-
-    const deleteHandler = new NodejsFunction(this, 'DeleteWidgetHandler', {
-      entry: 'resources/widgets/delete.ts',
-      ...lambdaProps
-    })
-    idEndpoint.addMethod(
-      'DELETE',
-      new LambdaIntegration(deleteHandler),
-      authSettings
-    )
+    return handler
   }
 }
