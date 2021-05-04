@@ -1,6 +1,6 @@
 import 'source-map-support/register'
 import { App } from '@aws-cdk/core'
-import { ManualForMeStack } from '../lib/manualforme-stack'
+import { ManualForMeStack } from '../lib/stack'
 
 const app = new App()
 

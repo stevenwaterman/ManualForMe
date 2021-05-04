@@ -1,5 +1,5 @@
 import { App } from '@aws-cdk/core'
-import { ManualForMeStack } from '../lib/manualforme-stack'
+import { ManualForMeStack } from '../lib/stack'
 
 test('Empty Stack', () => {
   const app = new App()
