@@ -4,12 +4,12 @@
   "license": "Apache-2.0",
   "repository": "https://github.com/stevenwaterman/ManualForMe/",
   "bin": {
-    "manualforme": "bin/manualforme.ts"
+    "manualforme": "bin/manualForMe.ts"
   },
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
-    "test": "npm run lint && jest",
+    "test": "npm run lint && jest --passWithNoTests",
     "lint": "ts-standardx --fix",
     "synth": "cdk synth > cdk.synth.yml",
     "deploy": "npm run test && cdk deploy EnvironmentStack",

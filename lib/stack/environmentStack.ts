@@ -1,7 +1,12 @@
 import { Construct, RemovalPolicy, Stack, StackProps } from '@aws-cdk/core'
-import { WidgetService } from './widget-service'
+import { WidgetService } from '../service/widgetService'
 import { Certificate } from '@aws-cdk/aws-certificatemanager'
-import { ARecord, HostedZone, HostedZoneAttributes, RecordTarget } from '@aws-cdk/aws-route53'
+import {
+  ARecord,
+  HostedZone,
+  HostedZoneAttributes,
+  RecordTarget
+} from '@aws-cdk/aws-route53'
 import { UserPoolDomainTarget } from '@aws-cdk/aws-route53-targets'
 import {
   OAuthScope,
@@ -10,6 +15,7 @@ import {
 } from '@aws-cdk/aws-cognito'
 import { AttributeType, BillingMode, Table } from '@aws-cdk/aws-dynamodb'
 import { RestApi, RestApiAttributes } from '@aws-cdk/aws-apigateway'
+import { NodejsFunction } from '@aws-cdk/aws-lambda-nodejs'
 
 export class EnvironmentStack extends Stack {
   constructor(
@@ -23,7 +29,11 @@ export class EnvironmentStack extends Stack {
   ) {
     super(scope, id, props)
 
-    const zone = HostedZone.fromHostedZoneAttributes(this, 'Zone', props.zoneAttributes)
+    const zone = HostedZone.fromHostedZoneAttributes(
+      this,
+      'Zone',
+      props.zoneAttributes
+    )
     const certificate = Certificate.fromCertificateArn(
       this,
       'Certificate',
@@ -36,6 +46,10 @@ export class EnvironmentStack extends Stack {
       partitionKey: { name: 'username', type: AttributeType.STRING },
       billingMode: BillingMode.PAY_PER_REQUEST,
       removalPolicy: RemovalPolicy.DESTROY
+    })
+
+    const preSignUp = new NodejsFunction(this, 'PreSignUp', {
+      entry: `resources/preSignUp.ts`
     })
 
     const pool = new UserPool(this, 'pool', {
@@ -59,7 +73,8 @@ export class EnvironmentStack extends Stack {
         requireUppercase: false
       },
       signInCaseSensitive: false,
-      removalPolicy: RemovalPolicy.DESTROY
+      removalPolicy: RemovalPolicy.DESTROY,
+      lambdaTriggers: { preSignUp }
     })
 
     pool.addClient('AppClient', {
@@ -71,22 +86,24 @@ export class EnvironmentStack extends Stack {
       preventUserExistenceErrors: true,
       oAuth: {
         flows: {
-          authorizationCodeGrant: true,
-          implicitCodeGrant: false,
+          authorizationCodeGrant: false,
+          implicitCodeGrant: true,
           clientCredentials: false
         },
         scopes: [OAuthScope.EMAIL, OAuthScope.PROFILE],
         callbackUrls: ['https://manualfor.me/authSuccess'],
-        logoutUrls: ['https://manualfor.me/signedOut']
+        logoutUrls: ['https://manualfor.me']
       },
       supportedIdentityProviders: [UserPoolClientIdentityProvider.COGNITO]
     })
 
     new WidgetService(this, 'Widgets', { api, pool })
 
+    const authPrefix = 'auth2'
+
     const domain = pool.addDomain('PoolDomain', {
       customDomain: {
-        domainName: 'auth.manualfor.me',
+        domainName: `${authPrefix}.manualfor.me`,
         certificate
       }
     })
@@ -94,7 +111,7 @@ export class EnvironmentStack extends Stack {
     const target = new UserPoolDomainTarget(domain)
     new ARecord(this, 'ARecord_auth', {
       zone: zone,
-      recordName: 'auth.manualfor.me',
+      recordName: `${authPrefix}.manualfor.me`,
       target: RecordTarget.fromAlias(target)
     })
   }

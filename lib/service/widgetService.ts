@@ -36,15 +36,17 @@ export class WidgetService extends Construct {
       ]
     })
 
+    const apiEndpoint = props.api.root.addResource('api')
+
     this.createLambda('list-widgets', {
-      endpoint: props.api.root,
+      endpoint: apiEndpoint,
       method: 'GET',
       entry: 'widgets/list.ts',
       role,
       authorizer
     })
 
-    const idEndpoint = props.api.root.addResource('{id}')
+    const idEndpoint = apiEndpoint.addResource('{id}')
 
     this.createLambda('get-widget', {
       endpoint: idEndpoint,

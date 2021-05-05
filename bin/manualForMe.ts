@@ -1,7 +1,7 @@
 import 'source-map-support/register'
 import { App } from '@aws-cdk/core'
-import { EnvironmentStack } from '../lib/environmentStack'
-import { GlobalStack } from '../lib/globalStack'
+import { EnvironmentStack } from '../lib/stack/environmentStack'
+import { GlobalStack } from '../lib/stack/globalStack'
 
 const app = new App()
 
