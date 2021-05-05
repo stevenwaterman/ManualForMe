@@ -1,22 +1,35 @@
 import { Construct, RemovalPolicy, Stack, StackProps } from '@aws-cdk/core'
 import { WidgetService } from './widget-service'
-import {
-  Certificate,
-  CertificateValidation
-} from '@aws-cdk/aws-certificatemanager'
-import { ARecord, HostedZone, RecordTarget } from '@aws-cdk/aws-route53'
-import { ApiGateway, UserPoolDomainTarget } from '@aws-cdk/aws-route53-targets'
+import { Certificate } from '@aws-cdk/aws-certificatemanager'
+import { ARecord, HostedZone, HostedZoneAttributes, RecordTarget } from '@aws-cdk/aws-route53'
+import { UserPoolDomainTarget } from '@aws-cdk/aws-route53-targets'
 import {
   OAuthScope,
   UserPool,
   UserPoolClientIdentityProvider
 } from '@aws-cdk/aws-cognito'
 import { AttributeType, BillingMode, Table } from '@aws-cdk/aws-dynamodb'
-import { EndpointType, RestApi, SecurityPolicy } from '@aws-cdk/aws-apigateway'
+import { RestApi, RestApiAttributes } from '@aws-cdk/aws-apigateway'
 
-export class ManualForMeStack extends Stack {
-  constructor(scope: Construct, id: string, props?: StackProps) {
+export class EnvironmentStack extends Stack {
+  constructor(
+    scope: Construct,
+    id: string,
+    props: StackProps & {
+      zoneAttributes: HostedZoneAttributes
+      certificateArn: string
+      apiAttributes: RestApiAttributes
+    }
+  ) {
     super(scope, id, props)
+
+    const zone = HostedZone.fromHostedZoneAttributes(this, 'Zone', props.zoneAttributes)
+    const certificate = Certificate.fromCertificateArn(
+      this,
+      'Certificate',
+      props.certificateArn
+    )
+    const api = RestApi.fromRestApiAttributes(this, 'Api', props.apiAttributes)
 
     new Table(this, 'Table', {
       tableName: 'widgets',
@@ -24,30 +37,6 @@ export class ManualForMeStack extends Stack {
       billingMode: BillingMode.PAY_PER_REQUEST,
       removalPolicy: RemovalPolicy.DESTROY
     })
-
-    const zone = new HostedZone(this, 'HostedZone', {
-      zoneName: 'manualfor.me'
-    })
-
-    const certificate = new Certificate(this, 'Certificate', {
-      domainName: '*.manualfor.me',
-      validation: CertificateValidation.fromDns(zone)
-    })
-
-    const api = new RestApi(this, 'widgets-api', {
-      restApiName: 'Widget Service',
-      description: 'This service serves widgets.',
-      domainName: {
-        domainName: 'www.manualfor.me',
-        certificate: certificate,
-        securityPolicy: SecurityPolicy.TLS_1_2
-      },
-      endpointConfiguration: {
-        types: [EndpointType.REGIONAL]
-      }
-    })
-
-    const gateway = new ApiGateway(api)
 
     const pool = new UserPool(this, 'pool', {
       userPoolName: 'manualforme-userpool',
@@ -71,17 +60,6 @@ export class ManualForMeStack extends Stack {
       },
       signInCaseSensitive: false,
       removalPolicy: RemovalPolicy.DESTROY
-    })
-
-    new ARecord(this, 'ARecord_Apex', {
-      zone: zone,
-      target: RecordTarget.fromAlias(gateway)
-    })
-
-    new ARecord(this, 'ARecord_WWW', {
-      zone: zone,
-      recordName: 'www.manualfor.me',
-      target: RecordTarget.fromAlias(gateway)
     })
 
     pool.addClient('AppClient', {

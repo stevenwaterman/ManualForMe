@@ -1,8 +1,17 @@
 import { App } from '@aws-cdk/core'
-import { ManualForMeStack } from '../lib/stack'
+import { GlobalStack } from '../lib/globalStack'
+import { EnvironmentStack } from '../lib/environmentStack'
 
 test('Empty Stack', () => {
   const app = new App()
   // WHEN
-  new ManualForMeStack(app, 'ManualForMeStack')
+  const { zoneAttributes, certificateArn, apiAttributes } = new GlobalStack(
+    app,
+    'GlobalStack'
+  )
+  new EnvironmentStack(app, 'EnvironmentStack', {
+    zoneAttributes,
+    certificateArn,
+    apiAttributes
+  })
 })

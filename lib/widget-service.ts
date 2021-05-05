@@ -4,8 +4,8 @@ import {
   CognitoUserPoolsAuthorizer,
   IAuthorizer,
   IResource,
-  LambdaIntegration,
-  RestApi
+  IRestApi,
+  LambdaIntegration
 } from '@aws-cdk/aws-apigateway'
 import { NodejsFunction } from '@aws-cdk/aws-lambda-nodejs'
 import { ManagedPolicy, Role, ServicePrincipal } from '@aws-cdk/aws-iam'
@@ -16,7 +16,7 @@ export class WidgetService extends Construct {
     scope: Construct,
     id: string,
     props: {
-      api: RestApi
+      api: IRestApi
       pool: UserPool
     }
   ) {
