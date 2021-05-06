@@ -1,6 +1,6 @@
 import { App } from '@aws-cdk/core'
-import { GlobalStack } from '../lib/globalStack'
-import { EnvironmentStack } from '../lib/environmentStack'
+import { GlobalStack } from './lib/stack/globalStack'
+import { EnvironmentStack } from './lib/stack/environmentStack'
 
 test('Empty Stack', () => {
   const app = new App()

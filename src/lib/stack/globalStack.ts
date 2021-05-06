@@ -16,7 +16,7 @@ import {
   RecordTarget
 } from '@aws-cdk/aws-route53'
 import { ApiGateway } from '@aws-cdk/aws-route53-targets'
-import { Construct, Stack, StackProps } from '@aws-cdk/core'
+import { CfnOutput, Construct, Stack, StackProps } from '@aws-cdk/core'
 
 export class GlobalStack extends Stack {
   public readonly certificateArn: string
@@ -26,21 +26,27 @@ export class GlobalStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props)
 
+    const domain = 'manualfor.me'
+    const apiPrefix = 'api'
+
     const zone = new HostedZone(this, 'HostedZone', {
-      zoneName: 'manualfor.me'
+      zoneName: domain
     })
 
     const certificate = new Certificate(this, 'Certificate', {
-      domainName: '*.manualfor.me',
+      domainName: `*.${domain}`,
       subjectAlternativeNames: ['manualfor.me'],
       validation: CertificateValidation.fromDns(zone)
     })
+    new CfnOutput(this, 'CertificateArn', { value: certificate.certificateArn })
+
+    const apiUrl = `${apiPrefix}.${domain}`
 
     const api = new RestApi(this, 'widgets-api', {
       restApiName: 'Widget Service',
       description: 'This service serves widgets.',
       domainName: {
-        domainName: 'manualfor.me',
+        domainName: apiUrl,
         certificate: certificate,
         securityPolicy: SecurityPolicy.TLS_1_2
       },
@@ -53,9 +59,10 @@ export class GlobalStack extends Stack {
 
     const gateway = new ApiGateway(api)
 
-    new ARecord(this, 'ARecord_Apex', {
+    new ARecord(this, 'ARecord_Api', {
       zone: zone,
-      target: RecordTarget.fromAlias(gateway)
+      target: RecordTarget.fromAlias(gateway),
+      recordName: apiUrl
     })
 
     this.zoneAttributes = {

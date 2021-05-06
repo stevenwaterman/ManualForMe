@@ -4,7 +4,7 @@
   "license": "Apache-2.0",
   "repository": "https://github.com/stevenwaterman/ManualForMe/",
   "bin": {
-    "manualforme": "bin/manualForMe.ts"
+    "manualforme": "src/bin/manualForMe.ts"
   },
   "scripts": {
     "build": "tsc",
@@ -12,7 +12,7 @@
     "test": "npm run lint && jest --passWithNoTests",
     "lint": "ts-standardx --fix",
     "synth": "cdk synth > cdk.synth.yml",
-    "deploy": "npm run test && cdk deploy EnvironmentStack",
+    "deploy": "sh buildFrontend.sh && npm run test && cdk deploy EnvironmentStack",
     "deploy-global": "npm run test && cdk deploy GlobalStack"
   },
   "devDependencies": {
@@ -39,6 +39,7 @@
     "@aws-cdk/aws-lambda-nodejs": "^1.102.0",
     "@aws-cdk/aws-route53": "^1.102.0",
     "@aws-cdk/aws-route53-targets": "^1.102.0",
+    "@aws-cdk/aws-s3-deployment": "^1.102.0",
     "@aws-cdk/core": "1.102.0",
     "source-map-support": "^0.5.16"
   },

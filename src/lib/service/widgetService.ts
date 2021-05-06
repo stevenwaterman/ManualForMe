@@ -36,7 +36,7 @@ export class WidgetService extends Construct {
       ]
     })
 
-    const apiEndpoint = props.api.root.addResource('api')
+    const apiEndpoint = props.api.root
 
     this.createLambda('list-widgets', {
       endpoint: apiEndpoint,
@@ -84,7 +84,7 @@ export class WidgetService extends Construct {
     }
   ): NodejsFunction {
     const handler = new NodejsFunction(this, id, {
-      entry: `resources/${props.entry}`,
+      entry: `src/resources/${props.entry}`,
       role: props.role
     })
     props.endpoint.addMethod(props.method, new LambdaIntegration(handler), {

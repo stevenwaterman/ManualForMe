@@ -16,6 +16,7 @@ import {
 import { AttributeType, BillingMode, Table } from '@aws-cdk/aws-dynamodb'
 import { RestApi, RestApiAttributes } from '@aws-cdk/aws-apigateway'
 import { NodejsFunction } from '@aws-cdk/aws-lambda-nodejs'
+import { StaticSite } from '../staticSite'
 
 export class EnvironmentStack extends Stack {
   constructor(
@@ -49,7 +50,7 @@ export class EnvironmentStack extends Stack {
     })
 
     const preSignUp = new NodejsFunction(this, 'PreSignUp', {
-      entry: `resources/preSignUp.ts`
+      entry: `src/resources/preSignUp.ts`
     })
 
     const pool = new UserPool(this, 'pool', {
@@ -79,15 +80,12 @@ export class EnvironmentStack extends Stack {
 
     pool.addClient('AppClient', {
       generateSecret: true,
-      authFlows: {
-        adminUserPassword: true,
-        userPassword: true
-      },
+      authFlows: { userPassword: true },
       preventUserExistenceErrors: true,
       oAuth: {
         flows: {
-          authorizationCodeGrant: false,
-          implicitCodeGrant: true,
+          authorizationCodeGrant: true,
+          implicitCodeGrant: false,
           clientCredentials: false
         },
         scopes: [OAuthScope.EMAIL, OAuthScope.PROFILE],
@@ -113,6 +111,11 @@ export class EnvironmentStack extends Stack {
       zone: zone,
       recordName: `${authPrefix}.manualfor.me`,
       target: RecordTarget.fromAlias(target)
+    })
+
+    new StaticSite(this, 'StaticSite', {
+      certificate,
+      zone
     })
   }
 }
