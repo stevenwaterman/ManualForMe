@@ -1,9 +1,18 @@
 <script lang="ts">
-  import useQuery from "../useQuery";
-  import { navigate } from "svelte-navigator";
+  import { useQuery } from "../useQuery";
+  import { Link } from "svelte-navigator";
+  
   const codeStore = useQuery("code");
-  codeStore.subscribe(code => {
-    sessionStorage.setItem("auth", code as string);
-    navigate("/");
-  })
+  let code: string;
+  $: code = $codeStore as string;
+
+  $: if (code) sessionStorage.setItem("auth", code);
 </script>
+
+{#if code}
+  <h1>Successfully logged in</h1>
+{:else}
+  <h1>Failed to log in</h1>
+{/if}
+
+<Link to="/">Go back</Link>
