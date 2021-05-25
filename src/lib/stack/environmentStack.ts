@@ -89,8 +89,8 @@ export class EnvironmentStack extends Stack {
           clientCredentials: false
         },
         scopes: [OAuthScope.EMAIL, OAuthScope.PROFILE],
-        callbackUrls: ['https://manualfor.me/authSuccess'],
-        logoutUrls: ['https://manualfor.me']
+        callbackUrls: ['https://manualfor.me/authSuccess', 'http://localhost:5000/authSuccess'],
+        logoutUrls: ['https://manualfor.me', 'http://localhost:5000']
       },
       supportedIdentityProviders: [UserPoolClientIdentityProvider.COGNITO]
     })

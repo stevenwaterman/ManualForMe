@@ -1,14 +1,12 @@
 <script lang="ts">
-  import { Router, Link, Route } from "svelte-navigator";
+  import { Router, Route } from "svelte-navigator";
   import Home from "./home/index.svelte";
-  import Hi from "./hi/index.svelte";
-  import NotFound from "./notfound/index.svelte";
+  import AuthSuccess from './authSuccess/index.svelte';
+  import NotFound from "./notFound/index.svelte";
 </script>
-
-<h1>Hello</h1>
 
 <Router>
   <Route path="/" component={Home}/>
-  <Route path="hi" component={Hi}/>
+  <Route path="authSuccess" component={AuthSuccess}/>
   <Route component={NotFound}/>
 </Router>
