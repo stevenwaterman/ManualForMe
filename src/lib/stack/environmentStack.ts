@@ -16,18 +16,29 @@ import {
 import { AttributeType, BillingMode, Table } from '@aws-cdk/aws-dynamodb'
 import { RestApi, RestApiAttributes } from '@aws-cdk/aws-apigateway'
 import { NodejsFunction } from '@aws-cdk/aws-lambda-nodejs'
-import { StaticSite } from '../staticSite'
+import { BucketDeployment, Source } from '@aws-cdk/aws-s3-deployment'
+import { Bucket } from '@aws-cdk/aws-s3'
+import {
+  CloudFrontWebDistribution,
+  CloudFrontWebDistributionAttributes
+} from '@aws-cdk/aws-cloudfront'
 
 export class EnvironmentStack extends Stack {
-  constructor(
-    scope: Construct,
-    id: string,
+  constructor({
+    scope,
+    id,
+    props
+  }: {
+    scope: Construct
+    id: string
     props: StackProps & {
       zoneAttributes: HostedZoneAttributes
+      distributionAttributes: CloudFrontWebDistributionAttributes
+      bucketArn: string
       certificateArn: string
       apiAttributes: RestApiAttributes
     }
-  ) {
+  }) {
     super(scope, id, props)
 
     const zone = HostedZone.fromHostedZoneAttributes(
@@ -39,6 +50,12 @@ export class EnvironmentStack extends Stack {
       this,
       'Certificate',
       props.certificateArn
+    )
+    const siteBucket = Bucket.fromBucketArn(this, 'Bucket', props.bucketArn)
+    const distribution = CloudFrontWebDistribution.fromDistributionAttributes(
+      this,
+      'Distribution',
+      props.distributionAttributes
     )
 
     new Table(this, 'Table', {
@@ -116,9 +133,12 @@ export class EnvironmentStack extends Stack {
       target: RecordTarget.fromAlias(target)
     })
 
-    new StaticSite(this, 'StaticSite', {
-      certificate,
-      zone
+    // Deploy site contents to S3 bucket
+    new BucketDeployment(this, 'DeployWithInvalidation', {
+      sources: [Source.asset('svelte/public')],
+      destinationBucket: siteBucket,
+      distribution,
+      distributionPaths: ['/*']
     })
   }
 }

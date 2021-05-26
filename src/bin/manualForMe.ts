@@ -10,16 +10,24 @@ const env = {
   region: 'us-east-1'
 }
 
-const { zoneAttributes, certificateArn, apiAttributes } = new GlobalStack(
-  app,
-  'GlobalStack',
-  {
-    env
-  }
-)
-new EnvironmentStack(app, 'EnvironmentStack', {
-  env,
+const {
   zoneAttributes,
+  bucketArn,
   certificateArn,
-  apiAttributes
+  apiAttributes,
+  distributionAttributes
+} = new GlobalStack(app, 'GlobalStack', {
+  env
+})
+new EnvironmentStack({
+  scope: app,
+  id: 'EnvironmentStack',
+  props: {
+    env,
+    zoneAttributes,
+    bucketArn,
+    certificateArn,
+    apiAttributes,
+    distributionAttributes
+  }
 })

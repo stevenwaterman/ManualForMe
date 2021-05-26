@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { useQuery } from "../useQuery";
+  import { useHash } from "../useQuery";
   import { Link } from "svelte-navigator";
   
-  const codeStore = useQuery("code");
+  const codeStore = useHash("id_token");
   let code: string;
   $: code = $codeStore as string;
 

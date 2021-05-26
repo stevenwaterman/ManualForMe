@@ -5,13 +5,22 @@ import { EnvironmentStack } from './lib/stack/environmentStack'
 test('Empty Stack', () => {
   const app = new App()
   // WHEN
-  const { zoneAttributes, certificateArn, apiAttributes } = new GlobalStack(
-    app,
-    'GlobalStack'
-  )
-  new EnvironmentStack(app, 'EnvironmentStack', {
+  const {
     zoneAttributes,
     certificateArn,
-    apiAttributes
+    apiAttributes,
+    bucketArn,
+    distributionAttributes
+  } = new GlobalStack(app, 'GlobalStack')
+  new EnvironmentStack({
+    scope: app,
+    id: 'EnvironmentStack',
+    props: {
+      zoneAttributes,
+      certificateArn,
+      apiAttributes,
+      bucketArn,
+      distributionAttributes
+    }
   })
 })
