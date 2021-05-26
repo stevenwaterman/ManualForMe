@@ -6,4 +6,3 @@ export async function handler(
   event.response.autoConfirmUser = true
   return event
 }
-[]
