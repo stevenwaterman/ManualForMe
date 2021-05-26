@@ -1,5 +1,10 @@
 <script lang="ts">
-  const auth = sessionStorage.getItem("auth");
+  let auth: string | null = sessionStorage.getItem("auth");
+
+  function signOut() {
+    sessionStorage.removeItem("auth");
+    auth = null;
+  }
 
   async function sendRequest() {
     const url = "https://api.manualfor.me";
@@ -19,6 +24,7 @@
   <button on:click={sendRequest}>Send Request</button>
 {:else}
   <!-- TODO pass in the client_id via props -->
-  <a href={`https://auth2.manualfor.me/signup?client_id=c0vhj2cc0khihdn1ihs0037fq&response_type=code&scope=email+openid+profile&redirect_uri=${window.location.origin}/authSuccess`}>Sign Up</a>
-  <a href={`https://auth2.manualfor.me/login?client_id=c0vhj2cc0khihdn1ihs0037fq&response_type=code&scope=email+openid+profile&redirect_uri=${window.location.origin}/authSuccess`}>Log In</a>
+  <a href={`https://auth2.manualfor.me/signup?client_id=c0vhj2cc0khihdn1ihs0037fq&response_type=token&scope=email+openid+profile&redirect_uri=${window.location.origin}/authSuccess`}>Sign Up</a>
+  <a href={`https://auth2.manualfor.me/login?client_id=c0vhj2cc0khihdn1ihs0037fq&response_type=token&scope=email+openid+profile&redirect_uri=${window.location.origin}/authSuccess`}>Log In</a>
+  <button on:click={signOut}>Sign Out</button>
 {/if}
