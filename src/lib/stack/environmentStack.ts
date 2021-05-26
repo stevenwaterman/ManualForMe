@@ -40,7 +40,6 @@ export class EnvironmentStack extends Stack {
       'Certificate',
       props.certificateArn
     )
-    const api = RestApi.fromRestApiAttributes(this, 'Api', props.apiAttributes)
 
     new Table(this, 'Table', {
       tableName: 'widgets',
@@ -84,8 +83,8 @@ export class EnvironmentStack extends Stack {
       preventUserExistenceErrors: true,
       oAuth: {
         flows: {
-          authorizationCodeGrant: true,
-          implicitCodeGrant: false,
+          authorizationCodeGrant: false,
+          implicitCodeGrant: true,
           clientCredentials: false
         },
         scopes: [OAuthScope.EMAIL, OAuthScope.PROFILE],
@@ -98,6 +97,7 @@ export class EnvironmentStack extends Stack {
       supportedIdentityProviders: [UserPoolClientIdentityProvider.COGNITO]
     })
 
+    const api = RestApi.fromRestApiAttributes(this, 'Api', props.apiAttributes)
     new WidgetService(this, 'Widgets', { api, pool })
 
     const authPrefix = 'auth2'
