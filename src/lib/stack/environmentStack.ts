@@ -1,21 +1,16 @@
 import { Construct, RemovalPolicy, Stack, StackProps } from '@aws-cdk/core'
 import { WidgetService } from '../service/widgetService'
-import { Certificate } from '@aws-cdk/aws-certificatemanager'
-import {
-  ARecord,
-  HostedZone,
-  HostedZoneAttributes,
-  RecordTarget
-} from '@aws-cdk/aws-route53'
-import { UserPoolDomainTarget } from '@aws-cdk/aws-route53-targets'
 import {
   OAuthScope,
   UserPool,
   UserPoolClientIdentityProvider
 } from '@aws-cdk/aws-cognito'
 import { AttributeType, BillingMode, Table } from '@aws-cdk/aws-dynamodb'
-import { RestApi, RestApiAttributes } from '@aws-cdk/aws-apigateway'
-import { NodejsFunction } from '@aws-cdk/aws-lambda-nodejs'
+import {
+  HttpApi,
+  HttpApiAttributes,
+  HttpStage
+} from '@aws-cdk/aws-apigatewayv2'
 import { BucketDeployment, Source } from '@aws-cdk/aws-s3-deployment'
 import { Bucket } from '@aws-cdk/aws-s3'
 import {
@@ -32,25 +27,14 @@ export class EnvironmentStack extends Stack {
     scope: Construct
     id: string
     props: StackProps & {
-      zoneAttributes: HostedZoneAttributes
       distributionAttributes: CloudFrontWebDistributionAttributes
       bucketArn: string
-      certificateArn: string
-      apiAttributes: RestApiAttributes
+      apiAttributes: HttpApiAttributes
+      userPoolId: string
     }
   }) {
     super(scope, id, props)
 
-    const zone = HostedZone.fromHostedZoneAttributes(
-      this,
-      'Zone',
-      props.zoneAttributes
-    )
-    const certificate = Certificate.fromCertificateArn(
-      this,
-      'Certificate',
-      props.certificateArn
-    )
     const siteBucket = Bucket.fromBucketArn(this, 'Bucket', props.bucketArn)
     const distribution = CloudFrontWebDistribution.fromDistributionAttributes(
       this,
@@ -65,36 +49,9 @@ export class EnvironmentStack extends Stack {
       removalPolicy: RemovalPolicy.DESTROY
     })
 
-    const preSignUp = new NodejsFunction(this, 'PreSignUp', {
-      entry: `src/resources/preSignUp.ts`
-    })
+    const userPool = UserPool.fromUserPoolId(this, 'UserPool', props.userPoolId)
 
-    const pool = new UserPool(this, 'pool', {
-      userPoolName: 'manualforme-userpool',
-      selfSignUpEnabled: true,
-      enableSmsRole: false,
-      standardAttributes: {
-        fullname: {
-          mutable: true,
-          required: true
-        },
-        email: {
-          mutable: true,
-          required: true
-        }
-      },
-      passwordPolicy: {
-        requireDigits: false,
-        requireLowercase: false,
-        requireSymbols: false,
-        requireUppercase: false
-      },
-      signInCaseSensitive: false,
-      removalPolicy: RemovalPolicy.DESTROY,
-      lambdaTriggers: { preSignUp }
-    })
-
-    pool.addClient('AppClient', {
+    const userPoolClient = userPool.addClient('AppClient', {
       generateSecret: true,
       authFlows: { userPassword: true },
       preventUserExistenceErrors: true,
@@ -114,24 +71,14 @@ export class EnvironmentStack extends Stack {
       supportedIdentityProviders: [UserPoolClientIdentityProvider.COGNITO]
     })
 
-    const api = RestApi.fromRestApiAttributes(this, 'Api', props.apiAttributes)
-    new WidgetService(this, 'Widgets', { api, pool })
-
-    const authPrefix = 'auth2'
-
-    const domain = pool.addDomain('PoolDomain', {
-      customDomain: {
-        domainName: `${authPrefix}.manualfor.me`,
-        certificate
-      }
+    const api = HttpApi.fromHttpApiAttributes(this, 'Api', props.apiAttributes)
+    const stage = new HttpStage(this, 'Stage', {
+      httpApi: api,
+      stageName: 'api',
+      autoDeploy: true
     })
 
-    const target = new UserPoolDomainTarget(domain)
-    new ARecord(this, 'ARecord_auth', {
-      zone: zone,
-      recordName: `${authPrefix}.manualfor.me`,
-      target: RecordTarget.fromAlias(target)
-    })
+    new WidgetService(this, 'Widgets', { stage, userPool, userPoolClient })
 
     // Deploy site contents to S3 bucket
     new BucketDeployment(this, 'DeployWithInvalidation', {

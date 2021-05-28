@@ -6,21 +6,19 @@ test('Empty Stack', () => {
   const app = new App()
   // WHEN
   const {
-    zoneAttributes,
-    certificateArn,
     apiAttributes,
     bucketArn,
-    distributionAttributes
+    distributionAttributes,
+    userPoolId
   } = new GlobalStack(app, 'GlobalStack')
   new EnvironmentStack({
     scope: app,
     id: 'EnvironmentStack',
     props: {
-      zoneAttributes,
-      certificateArn,
       apiAttributes,
       bucketArn,
-      distributionAttributes
+      distributionAttributes,
+      userPoolId
     }
   })
 })

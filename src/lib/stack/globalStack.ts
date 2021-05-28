@@ -1,22 +1,17 @@
 import {
-  EndpointType,
-  RestApi,
-  RestApiAttributes,
-  SecurityPolicy
-} from '@aws-cdk/aws-apigateway'
+  CorsHttpMethod,
+  HttpApi,
+  HttpApiAttributes
+} from '@aws-cdk/aws-apigatewayv2'
 import {
   Certificate,
   CertificateValidation
 } from '@aws-cdk/aws-certificatemanager'
-import {
-  ARecord,
-  HostedZone,
-  HostedZoneAttributes,
-  RecordTarget
-} from '@aws-cdk/aws-route53'
+import { ARecord, HostedZone, RecordTarget } from '@aws-cdk/aws-route53'
 import {
   CfnOutput,
   Construct,
+  Duration,
   RemovalPolicy,
   Stack,
   StackProps
@@ -26,18 +21,23 @@ import {
   CloudFrontWebDistributionAttributes,
   SSLMethod,
   SecurityPolicyProtocol,
-  OriginProtocolPolicy,
-  ViewerCertificate
+  ViewerCertificate,
+  CloudFrontAllowedMethods,
+  OriginAccessIdentity
 } from '@aws-cdk/aws-cloudfront'
-import { Bucket } from '@aws-cdk/aws-s3'
-import { CloudFrontTarget } from '@aws-cdk/aws-route53-targets/lib'
+import { Bucket, HttpMethods, BlockPublicAccess } from '@aws-cdk/aws-s3'
+import {
+  CloudFrontTarget,
+  UserPoolDomainTarget
+} from '@aws-cdk/aws-route53-targets/lib'
+import { NodejsFunction } from '@aws-cdk/aws-lambda-nodejs'
+import { UserPool } from '@aws-cdk/aws-cognito'
 
 export class GlobalStack extends Stack {
   public readonly bucketArn: string
-  public readonly certificateArn: string
-  public readonly zoneAttributes: HostedZoneAttributes
-  public readonly apiAttributes: RestApiAttributes
+  public readonly apiAttributes: HttpApiAttributes
   public readonly distributionAttributes: CloudFrontWebDistributionAttributes
+  public readonly userPoolId: string
 
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props)
@@ -45,7 +45,6 @@ export class GlobalStack extends Stack {
     // URLS
     const siteUrl = 'manualfor.me'
     const protoUrl = `https://${siteUrl}`
-    const apiUrl = `${siteUrl}/api`
     new CfnOutput(this, 'Url', { value: protoUrl })
 
     // DNS
@@ -61,30 +60,53 @@ export class GlobalStack extends Stack {
     new CfnOutput(this, 'CertificateArn', { value: certificate.certificateArn })
 
     // API
-    const api = new RestApi(this, 'widgets-api', {
-      restApiName: 'Widget Service',
+    const api = new HttpApi(this, 'widgets-api', {
+      apiName: 'Widget Service',
       description: 'This service serves widgets.',
-      domainName: {
-        domainName: apiUrl,
-        certificate: certificate,
-        securityPolicy: SecurityPolicy.TLS_1_2
+      corsPreflight: {
+        allowHeaders: ['Authorization'],
+        allowMethods: [
+          CorsHttpMethod.GET,
+          CorsHttpMethod.HEAD,
+          CorsHttpMethod.OPTIONS,
+          CorsHttpMethod.POST
+        ],
+        allowOrigins: ['https://manualfor.me', 'http://localhost:5000'],
+        allowCredentials: true,
+        maxAge: Duration.seconds(0)
       },
-      endpointConfiguration: {
-        types: [EndpointType.REGIONAL]
-      }
+      createDefaultStage: false
     })
+
+    // const healthFn = new NodejsFunction(this, 'HealthFn', {
+    //   entry: `src/resources/health.ts`
+    // })
+    // api.addRoutes({
+    //   path: '/health',
+    //   methods: [HttpMethod.GET],
+    //   integration: new LambdaProxyIntegration({
+    //     handler: healthFn
+    //   })
+    // })
 
     // Bucket
     const siteBucket = new Bucket(this, 'SiteBucket', {
-      bucketName: 'ManualForMe-Frontend',
-      websiteIndexDocument: 'index.html',
-      websiteErrorDocument: 'index.html',
-      publicReadAccess: true,
-      removalPolicy: RemovalPolicy.DESTROY
+      bucketName: 'manualforme-frontend',
+      removalPolicy: RemovalPolicy.DESTROY,
+      blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
+      cors: [
+        {
+          allowedOrigins: ['*'],
+          allowedMethods: [HttpMethods.GET],
+          maxAge: 3000
+        }
+      ]
     })
     new CfnOutput(this, 'BucketName', { value: siteBucket.bucketName })
 
     // CloudFront
+    const oai = new OriginAccessIdentity(this, 'CloudFrontOAI')
+    siteBucket.grantRead(oai)
     const distribution = new CloudFrontWebDistribution(
       this,
       'SiteDistribution',
@@ -92,38 +114,112 @@ export class GlobalStack extends Stack {
         originConfigs: [
           {
             customOriginSource: {
-              domainName: siteBucket.bucketWebsiteDomainName,
-              originProtocolPolicy: OriginProtocolPolicy.HTTP_ONLY
+              domainName: `${api.httpApiId}.execute-api.${this.region}.amazonaws.com`
             },
-            behaviors: [{ isDefaultBehavior: true }]
+            behaviors: [
+              {
+                isDefaultBehavior: false,
+                pathPattern: '/api*',
+                allowedMethods: CloudFrontAllowedMethods.ALL,
+                defaultTtl: Duration.seconds(0),
+                forwardedValues: {
+                  queryString: true,
+                  headers: ['Authorization']
+                }
+              }
+            ]
+          },
+          {
+            s3OriginSource: {
+              s3BucketSource: siteBucket,
+              originAccessIdentity: oai
+            },
+            behaviors: [
+              {
+                isDefaultBehavior: true,
+                compress: true,
+                defaultTtl: Duration.seconds(0),
+                allowedMethods: CloudFrontAllowedMethods.GET_HEAD_OPTIONS
+              }
+            ]
           }
         ],
         viewerCertificate: ViewerCertificate.fromAcmCertificate(certificate, {
           sslMethod: SSLMethod.SNI,
-          securityPolicy: SecurityPolicyProtocol.TLS_V1_2_2018
-        })
+          securityPolicy: SecurityPolicyProtocol.TLS_V1_2_2019,
+          aliases: [siteUrl]
+        }),
+        errorConfigurations: [
+          {
+            errorCode: 404,
+            responseCode: 200,
+            responsePagePath: '/index.html'
+          }
+        ]
       }
     )
     new CfnOutput(this, 'DistributionId', {
       value: distribution.distributionId
     })
 
-    new ARecord(this, 'SiteAliasRecord', {
+    const siteARecord = new ARecord(this, 'SiteAliasRecord', {
       recordName: siteUrl,
       target: RecordTarget.fromAlias(new CloudFrontTarget(distribution)),
       zone
     })
 
-    this.zoneAttributes = {
-      hostedZoneId: zone.hostedZoneId,
-      zoneName: zone.zoneName
-    }
+    const preSignUp = new NodejsFunction(this, 'PreSignUpFn', {
+      entry: `src/resources/preSignUp.ts`
+    })
+
+    const userPool = new UserPool(this, 'pool', {
+      userPoolName: 'manualforme-userpool',
+      selfSignUpEnabled: true,
+      enableSmsRole: false,
+      standardAttributes: {
+        fullname: {
+          mutable: true,
+          required: true
+        },
+        email: {
+          mutable: true,
+          required: true
+        }
+      },
+      passwordPolicy: {
+        requireDigits: false,
+        requireLowercase: false,
+        requireSymbols: false,
+        requireUppercase: false
+      },
+      signInCaseSensitive: false,
+      removalPolicy: RemovalPolicy.DESTROY,
+      lambdaTriggers: { preSignUp }
+    })
+
+    const authPrefix = 'credentials'
+    const authUrl = `${authPrefix}.${siteUrl}`
+
+    const domain = userPool.addDomain('PoolDomain', {
+      customDomain: {
+        domainName: authUrl,
+        certificate
+      }
+    })
+    // Apex record must exist before creating custom cognito domain
+    domain.node.addDependency(siteARecord)
+
+    new ARecord(this, 'ARecord_auth', {
+      zone: zone,
+      recordName: authUrl,
+      target: RecordTarget.fromAlias(new UserPoolDomainTarget(domain))
+    })
+
     this.bucketArn = siteBucket.bucketArn
-    this.certificateArn = certificate.certificateArn
     this.apiAttributes = {
-      restApiId: api.restApiId,
-      rootResourceId: api.restApiRootResourceId
+      httpApiId: api.apiId
     }
+    this.userPoolId = userPool.userPoolId
     this.distributionAttributes = {
       domainName: distribution.distributionDomainName,
       distributionId: distribution.distributionId

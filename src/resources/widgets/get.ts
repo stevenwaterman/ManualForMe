@@ -1,5 +1,6 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
 import { DynamoDB } from 'aws-sdk'
+import { lambdaResponse } from '../lambdaResponse'
 
 const dynamoDB = new DynamoDB.DocumentClient()
 
@@ -25,15 +26,10 @@ export async function handler(
       })
       .promise()
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify(data.Item)
-    }
+    return lambdaResponse(200, JSON.stringify(data.Item))
   } catch (error) {
-    const body = error.stack ?? JSON.stringify(error, null, 2)
-    return {
-      statusCode: 500,
-      body: JSON.stringify(body)
-    }
+    const body: string =
+      JSON.stringify(error.stack) ?? JSON.stringify(error, null, 2)
+    return lambdaResponse(500, body)
   }
 }

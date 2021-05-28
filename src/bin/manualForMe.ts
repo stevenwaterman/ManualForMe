@@ -11,11 +11,10 @@ const env = {
 }
 
 const {
-  zoneAttributes,
   bucketArn,
-  certificateArn,
   apiAttributes,
-  distributionAttributes
+  distributionAttributes,
+  userPoolId
 } = new GlobalStack(app, 'GlobalStack', {
   env
 })
@@ -24,10 +23,9 @@ new EnvironmentStack({
   id: 'EnvironmentStack',
   props: {
     env,
-    zoneAttributes,
     bucketArn,
-    certificateArn,
     apiAttributes,
-    distributionAttributes
+    distributionAttributes,
+    userPoolId
   }
 })

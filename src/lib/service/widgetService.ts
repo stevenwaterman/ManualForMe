@@ -1,29 +1,41 @@
-import { Construct } from '@aws-cdk/core'
+import { Construct, Fn } from '@aws-cdk/core'
 import {
-  AuthorizationType,
-  CognitoUserPoolsAuthorizer,
-  IAuthorizer,
-  IResource,
-  IRestApi,
-  LambdaIntegration
-} from '@aws-cdk/aws-apigateway'
+  CfnIntegration,
+  CfnRoute,
+  HttpIntegrationType,
+  HttpRouteAuthorizerConfig,
+  HttpStage,
+  IHttpRoute
+} from '@aws-cdk/aws-apigatewayv2'
 import { NodejsFunction } from '@aws-cdk/aws-lambda-nodejs'
 import { ManagedPolicy, Role, ServicePrincipal } from '@aws-cdk/aws-iam'
-import { UserPool } from '@aws-cdk/aws-cognito'
+import { IUserPool, UserPoolClient } from '@aws-cdk/aws-cognito'
+import { HttpUserPoolAuthorizer } from '@aws-cdk/aws-apigatewayv2-authorizers'
 
 export class WidgetService extends Construct {
   constructor(
     scope: Construct,
     id: string,
-    props: {
-      api: IRestApi
-      pool: UserPool
+    {
+      stage,
+      userPool,
+      userPoolClient
+    }: {
+      stage: HttpStage
+      userPool: IUserPool
+      userPoolClient: UserPoolClient
     }
   ) {
     super(scope, id)
 
-    const authorizer = new CognitoUserPoolsAuthorizer(this, 'Authorizer', {
-      cognitoUserPools: [props.pool]
+    const route: Pick<IHttpRoute, 'httpApi'> = { httpApi: stage.api }
+    const authorizerConfig = new HttpUserPoolAuthorizer({
+      authorizerName: 'authorizer',
+      userPool,
+      userPoolClient
+    }).bind({
+      scope: this,
+      route: route as IHttpRoute
     })
 
     const role = new Role(this, 'DbAccessLambdaRole', {
@@ -36,61 +48,84 @@ export class WidgetService extends Construct {
       ]
     })
 
-    const apiEndpoint = props.api.root
-
     this.createLambda('list-widgets', {
-      endpoint: apiEndpoint,
+      stage,
+      path: '',
       method: 'GET',
       entry: 'widgets/list.ts',
       role,
-      authorizer
+      authorizerConfig
     })
 
-    const idEndpoint = apiEndpoint.addResource('{id}')
-
     this.createLambda('get-widget', {
-      endpoint: idEndpoint,
+      stage,
+      path: '{id}',
       method: 'GET',
       entry: 'widgets/get.ts',
       role,
-      authorizer
+      authorizerConfig
     })
 
     this.createLambda('add-widget', {
-      endpoint: idEndpoint,
+      stage,
+      path: '{id}',
       method: 'POST',
       entry: 'widgets/add.ts',
       role,
-      authorizer
+      authorizerConfig
     })
 
     this.createLambda('delete-widget', {
-      endpoint: idEndpoint,
+      stage,
+      path: '{id}',
       method: 'DELETE',
       entry: 'widgets/delete.ts',
       role,
-      authorizer
+      authorizerConfig
     })
   }
 
   private createLambda(
     id: string,
     props: {
-      endpoint: IResource
+      stage: HttpStage
+      path: string
       method: string
       entry: string
       role: Role
-      authorizer: IAuthorizer
+      authorizerConfig: HttpRouteAuthorizerConfig
     }
   ): NodejsFunction {
     const handler = new NodejsFunction(this, id, {
       entry: `src/resources/${props.entry}`,
       role: props.role
     })
-    props.endpoint.addMethod(props.method, new LambdaIntegration(handler), {
-      authorizationType: AuthorizationType.COGNITO,
-      authorizer: props.authorizer
+    handler.grantInvoke(new ServicePrincipal('apigateway.amazonaws.com'))
+
+    // const proxyIntegration = new LambdaProxyIntegration({
+    //   handler
+    // }).bind({
+    //   scope: this,
+    //   route: {
+    //     ...({} as Omit<IHttpRoute, 'httpApi'>), // Only the API is used in .bind
+    //     httpApi: props.stage.api
+    //   }
+    // }).uri
+    const integration = new CfnIntegration(this, `${id}-integration`, {
+      apiId: props.stage.api.apiId,
+      payloadFormatVersion: '1.0',
+      integrationType: HttpIntegrationType.LAMBDA_PROXY,
+      integrationMethod: props.method,
+      integrationUri: handler.functionArn
     })
+
+    new CfnRoute(this, `${id}-route`, {
+      apiId: props.stage.api.apiId,
+      routeKey: `${props.method} /${props.path}`,
+      target: Fn.join('', ['integrations/', integration.ref]),
+      ...props.authorizerConfig
+    })
+
     return handler
   }
 }
