@@ -16,9 +16,12 @@ export async function handler(
       })
       .promise()
 
-    return lambdaResponse(200, JSON.stringify({ widgets: data.Items }))
+    return lambdaResponse({
+      statusCode: 200,
+      body: JSON.stringify({ widgets: data.Items })
+    })
   } catch (error) {
-    // const body = error.stack ?? JSON.stringify(error, null, 2)
-    return lambdaResponse(500, 'error')
+    const body = error.stack ?? JSON.stringify(error, null, 2)
+    return lambdaResponse({ statusCode: 500, body })
   }
 }

@@ -169,7 +169,7 @@ export class GlobalStack extends Stack {
     })
 
     const preSignUp = new NodejsFunction(this, 'PreSignUpFn', {
-      entry: `src/resources/preSignUp.ts`
+      entry: `src/resources/auth/preSignUp.ts`
     })
 
     const userPool = new UserPool(this, 'pool', {

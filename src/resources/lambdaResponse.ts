@@ -6,15 +6,20 @@ interface LambdaResponse {
   body: string
 }
 
-export function lambdaResponse(
-  statusCode: number,
-  body: string
-): LambdaResponse {
+export function lambdaResponse({
+  statusCode,
+  body,
+  headers
+}: {
+  statusCode: number
+  body?: string
+  headers?: Record<string, string>
+}): LambdaResponse {
   return {
     isBase64Encoded: false,
     statusCode,
-    headers: {},
+    headers: headers ?? {},
     multiValueHeaders: {},
-    body
+    body: body ?? ''
   }
 }

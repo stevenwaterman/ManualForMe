@@ -26,10 +26,10 @@ export async function handler(
       })
       .promise()
 
-    return lambdaResponse(200, 'Success')
+    return lambdaResponse({ statusCode: 200, body: 'Success' })
   } catch (error) {
     const body: string =
       JSON.stringify(error.stack) ?? JSON.stringify(error, null, 2)
-    return lambdaResponse(500, body)
+    return lambdaResponse({ statusCode: 500, body })
   }
 }

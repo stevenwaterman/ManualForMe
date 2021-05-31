@@ -38,7 +38,7 @@ export class WidgetService extends Construct {
       route: route as IHttpRoute
     })
 
-    const role = new Role(this, 'DbAccessLambdaRole', {
+    const dbRole = new Role(this, 'DbAccessLambdaRole', {
       assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
       managedPolicies: [
         ManagedPolicy.fromAwsManagedPolicyName('AmazonDynamoDBFullAccess'),
@@ -50,38 +50,56 @@ export class WidgetService extends Construct {
 
     this.createLambda('list-widgets', {
       stage,
-      path: '',
+      path: 'widgets',
       method: 'GET',
       entry: 'widgets/list.ts',
-      role,
-      authorizerConfig
+      role: dbRole
     })
 
     this.createLambda('get-widget', {
       stage,
-      path: '{id}',
+      path: 'widgets/{id}',
       method: 'GET',
       entry: 'widgets/get.ts',
-      role,
-      authorizerConfig
+      role: dbRole
     })
 
     this.createLambda('add-widget', {
       stage,
-      path: '{id}',
+      path: 'widgets/{id}',
       method: 'POST',
       entry: 'widgets/add.ts',
-      role,
+      role: dbRole,
       authorizerConfig
     })
 
     this.createLambda('delete-widget', {
       stage,
-      path: '{id}',
+      path: 'widgets/{id}',
       method: 'DELETE',
       entry: 'widgets/delete.ts',
-      role,
+      role: dbRole,
       authorizerConfig
+    })
+
+    this.createLambda('login-redirect', {
+      stage,
+      path: 'login',
+      method: 'GET',
+      entry: 'auth/loginRedirect.ts',
+      environment: {
+        CLIENT_ID: userPoolClient.userPoolClientId
+      }
+    })
+
+    this.createLambda('signup-redirect', {
+      stage,
+      path: 'signup',
+      method: 'GET',
+      entry: 'auth/signupRedirect.ts',
+      environment: {
+        CLIENT_ID: userPoolClient.userPoolClientId
+      }
     })
   }
 
@@ -92,25 +110,18 @@ export class WidgetService extends Construct {
       path: string
       method: string
       entry: string
-      role: Role
-      authorizerConfig: HttpRouteAuthorizerConfig
+      role?: Role
+      authorizerConfig?: HttpRouteAuthorizerConfig
+      environment?: Record<string, string>
     }
   ): NodejsFunction {
     const handler = new NodejsFunction(this, id, {
       entry: `src/resources/${props.entry}`,
-      role: props.role
+      role: props.role,
+      environment: props.environment
     })
     handler.grantInvoke(new ServicePrincipal('apigateway.amazonaws.com'))
 
-    // const proxyIntegration = new LambdaProxyIntegration({
-    //   handler
-    // }).bind({
-    //   scope: this,
-    //   route: {
-    //     ...({} as Omit<IHttpRoute, 'httpApi'>), // Only the API is used in .bind
-    //     httpApi: props.stage.api
-    //   }
-    // }).uri
     const integration = new CfnIntegration(this, `${id}-integration`, {
       apiId: props.stage.api.apiId,
       payloadFormatVersion: '1.0',
@@ -119,11 +130,13 @@ export class WidgetService extends Construct {
       integrationUri: handler.functionArn
     })
 
+    const authConfig = props.authorizerConfig != null || {}
+
     new CfnRoute(this, `${id}-route`, {
       apiId: props.stage.api.apiId,
       routeKey: `${props.method} /${props.path}`,
       target: Fn.join('', ['integrations/', integration.ref]),
-      ...props.authorizerConfig
+      ...authConfig
     })
 
     return handler
