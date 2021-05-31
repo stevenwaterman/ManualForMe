@@ -78,17 +78,6 @@ export class GlobalStack extends Stack {
       createDefaultStage: false
     })
 
-    // const healthFn = new NodejsFunction(this, 'HealthFn', {
-    //   entry: `src/resources/health.ts`
-    // })
-    // api.addRoutes({
-    //   path: '/health',
-    //   methods: [HttpMethod.GET],
-    //   integration: new LambdaProxyIntegration({
-    //     handler: healthFn
-    //   })
-    // })
-
     // Bucket
     const siteBucket = new Bucket(this, 'SiteBucket', {
       bucketName: 'manualforme-frontend',
@@ -119,7 +108,7 @@ export class GlobalStack extends Stack {
             behaviors: [
               {
                 isDefaultBehavior: false,
-                pathPattern: '/api*',
+                pathPattern: '/api/*',
                 allowedMethods: CloudFrontAllowedMethods.ALL,
                 defaultTtl: Duration.seconds(0),
                 forwardedValues: {

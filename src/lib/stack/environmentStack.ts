@@ -6,11 +6,7 @@ import {
   UserPoolClientIdentityProvider
 } from '@aws-cdk/aws-cognito'
 import { AttributeType, BillingMode, Table } from '@aws-cdk/aws-dynamodb'
-import {
-  HttpApi,
-  HttpApiAttributes,
-  HttpStage
-} from '@aws-cdk/aws-apigatewayv2'
+import { CfnStage, HttpApi, HttpApiAttributes } from '@aws-cdk/aws-apigatewayv2'
 import { BucketDeployment, Source } from '@aws-cdk/aws-s3-deployment'
 import { Bucket } from '@aws-cdk/aws-s3'
 import {
@@ -72,13 +68,18 @@ export class EnvironmentStack extends Stack {
     })
 
     const api = HttpApi.fromHttpApiAttributes(this, 'Api', props.apiAttributes)
-    const stage = new HttpStage(this, 'Stage', {
-      httpApi: api,
+
+    new CfnStage(this, 'Stage', {
+      apiId: api.apiId,
       stageName: 'api',
+      defaultRouteSettings: {
+        throttlingRateLimit: 20,
+        throttlingBurstLimit: 5
+      },
       autoDeploy: true
     })
 
-    new WidgetService(this, 'Widgets', { stage, userPool, userPoolClient })
+    new WidgetService(this, 'Widgets', { api, userPool, userPoolClient })
 
     // Deploy site contents to S3 bucket
     new BucketDeployment(this, 'DeployWithInvalidation', {

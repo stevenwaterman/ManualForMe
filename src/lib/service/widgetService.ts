@@ -4,7 +4,7 @@ import {
   CfnRoute,
   HttpIntegrationType,
   HttpRouteAuthorizerConfig,
-  HttpStage,
+  IHttpApi,
   IHttpRoute
 } from '@aws-cdk/aws-apigatewayv2'
 import { NodejsFunction } from '@aws-cdk/aws-lambda-nodejs'
@@ -17,18 +17,18 @@ export class WidgetService extends Construct {
     scope: Construct,
     id: string,
     {
-      stage,
+      api,
       userPool,
       userPoolClient
     }: {
-      stage: HttpStage
+      api: IHttpApi
       userPool: IUserPool
       userPoolClient: UserPoolClient
     }
   ) {
     super(scope, id)
 
-    const route: Pick<IHttpRoute, 'httpApi'> = { httpApi: stage.api }
+    const route: Pick<IHttpRoute, 'httpApi'> = { httpApi: api }
     const authorizerConfig = new HttpUserPoolAuthorizer({
       authorizerName: 'authorizer',
       userPool,
@@ -49,7 +49,7 @@ export class WidgetService extends Construct {
     })
 
     this.createLambda('list-widgets', {
-      stage,
+      api,
       path: 'widgets',
       method: 'GET',
       entry: 'widgets/list.ts',
@@ -57,7 +57,7 @@ export class WidgetService extends Construct {
     })
 
     this.createLambda('get-widget', {
-      stage,
+      api,
       path: 'widgets/{id}',
       method: 'GET',
       entry: 'widgets/get.ts',
@@ -65,7 +65,7 @@ export class WidgetService extends Construct {
     })
 
     this.createLambda('add-widget', {
-      stage,
+      api,
       path: 'widgets/{id}',
       method: 'POST',
       entry: 'widgets/add.ts',
@@ -74,7 +74,7 @@ export class WidgetService extends Construct {
     })
 
     this.createLambda('delete-widget', {
-      stage,
+      api,
       path: 'widgets/{id}',
       method: 'DELETE',
       entry: 'widgets/delete.ts',
@@ -83,7 +83,7 @@ export class WidgetService extends Construct {
     })
 
     this.createLambda('login-redirect', {
-      stage,
+      api,
       path: 'login',
       method: 'GET',
       entry: 'auth/loginRedirect.ts',
@@ -93,7 +93,7 @@ export class WidgetService extends Construct {
     })
 
     this.createLambda('signup-redirect', {
-      stage,
+      api,
       path: 'signup',
       method: 'GET',
       entry: 'auth/signupRedirect.ts',
@@ -106,7 +106,7 @@ export class WidgetService extends Construct {
   private createLambda(
     id: string,
     props: {
-      stage: HttpStage
+      api: IHttpApi
       path: string
       method: string
       entry: string
@@ -123,7 +123,7 @@ export class WidgetService extends Construct {
     handler.grantInvoke(new ServicePrincipal('apigateway.amazonaws.com'))
 
     const integration = new CfnIntegration(this, `${id}-integration`, {
-      apiId: props.stage.api.apiId,
+      apiId: props.api.apiId,
       payloadFormatVersion: '1.0',
       integrationType: HttpIntegrationType.LAMBDA_PROXY,
       integrationMethod: props.method,
@@ -133,7 +133,7 @@ export class WidgetService extends Construct {
     const authConfig = props.authorizerConfig != null || {}
 
     new CfnRoute(this, `${id}-route`, {
-      apiId: props.stage.api.apiId,
+      apiId: props.api.apiId,
       routeKey: `${props.method} /${props.path}`,
       target: Fn.join('', ['integrations/', integration.ref]),
       ...authConfig
