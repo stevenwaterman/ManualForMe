@@ -130,7 +130,7 @@ export class WidgetService extends Construct {
       integrationUri: handler.functionArn
     })
 
-    const authConfig = props.authorizerConfig != null || {}
+    const authConfig = props.authorizerConfig ?? {}
 
     new CfnRoute(this, `${id}-route`, {
       apiId: props.api.apiId,
