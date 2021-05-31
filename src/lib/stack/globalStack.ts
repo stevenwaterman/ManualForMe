@@ -7,7 +7,12 @@ import {
   Certificate,
   CertificateValidation
 } from '@aws-cdk/aws-certificatemanager'
-import { ARecord, HostedZone, RecordTarget } from '@aws-cdk/aws-route53'
+import {
+  ARecord,
+  HostedZone,
+  HostedZoneAttributes,
+  RecordTarget
+} from '@aws-cdk/aws-route53'
 import {
   CfnOutput,
   Construct,
@@ -26,18 +31,18 @@ import {
   OriginAccessIdentity
 } from '@aws-cdk/aws-cloudfront'
 import { Bucket, HttpMethods, BlockPublicAccess } from '@aws-cdk/aws-s3'
-import {
-  CloudFrontTarget,
-  UserPoolDomainTarget
-} from '@aws-cdk/aws-route53-targets/lib'
-import { NodejsFunction } from '@aws-cdk/aws-lambda-nodejs'
-import { UserPool } from '@aws-cdk/aws-cognito'
+import { CloudFrontTarget } from '@aws-cdk/aws-route53-targets/lib'
+
+export interface GlobalInfo {
+  bucketArn: string
+  apiAttributes: HttpApiAttributes
+  distributionAttributes: CloudFrontWebDistributionAttributes
+  certificateArn: string
+  zoneAttributes: HostedZoneAttributes
+}
 
 export class GlobalStack extends Stack {
-  public readonly bucketArn: string
-  public readonly apiAttributes: HttpApiAttributes
-  public readonly distributionAttributes: CloudFrontWebDistributionAttributes
-  public readonly userPoolId: string
+  public readonly globalInfo: GlobalInfo
 
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props)
@@ -108,7 +113,7 @@ export class GlobalStack extends Stack {
             behaviors: [
               {
                 isDefaultBehavior: false,
-                pathPattern: '/api/*',
+                pathPattern: '/api*',
                 allowedMethods: CloudFrontAllowedMethods.ALL,
                 defaultTtl: Duration.seconds(0),
                 forwardedValues: {
@@ -151,67 +156,26 @@ export class GlobalStack extends Stack {
       value: distribution.distributionId
     })
 
-    const siteARecord = new ARecord(this, 'SiteAliasRecord', {
+    new ARecord(this, 'SiteAliasRecord', {
       recordName: siteUrl,
       target: RecordTarget.fromAlias(new CloudFrontTarget(distribution)),
       zone
     })
 
-    const preSignUp = new NodejsFunction(this, 'PreSignUpFn', {
-      entry: `src/resources/auth/preSignUp.ts`
-    })
-
-    const userPool = new UserPool(this, 'pool', {
-      userPoolName: 'manualforme-userpool',
-      selfSignUpEnabled: true,
-      enableSmsRole: false,
-      standardAttributes: {
-        fullname: {
-          mutable: true,
-          required: true
-        },
-        email: {
-          mutable: true,
-          required: true
-        }
+    this.globalInfo = {
+      bucketArn: siteBucket.bucketArn,
+      apiAttributes: {
+        httpApiId: api.apiId
       },
-      passwordPolicy: {
-        requireDigits: false,
-        requireLowercase: false,
-        requireSymbols: false,
-        requireUppercase: false
+      distributionAttributes: {
+        domainName: distribution.distributionDomainName,
+        distributionId: distribution.distributionId
       },
-      signInCaseSensitive: false,
-      removalPolicy: RemovalPolicy.DESTROY,
-      lambdaTriggers: { preSignUp }
-    })
-
-    const authPrefix = 'credentials'
-    const authUrl = `${authPrefix}.${siteUrl}`
-
-    const domain = userPool.addDomain('PoolDomain', {
-      customDomain: {
-        domainName: authUrl,
-        certificate
+      certificateArn: certificate.certificateArn,
+      zoneAttributes: {
+        hostedZoneId: zone.hostedZoneId,
+        zoneName: zone.zoneName
       }
-    })
-    // Apex record must exist before creating custom cognito domain
-    domain.node.addDependency(siteARecord)
-
-    new ARecord(this, 'ARecord_auth', {
-      zone: zone,
-      recordName: authUrl,
-      target: RecordTarget.fromAlias(new UserPoolDomainTarget(domain))
-    })
-
-    this.bucketArn = siteBucket.bucketArn
-    this.apiAttributes = {
-      httpApiId: api.apiId
-    }
-    this.userPoolId = userPool.userPoolId
-    this.distributionAttributes = {
-      domainName: distribution.distributionDomainName,
-      distributionId: distribution.distributionId
     }
   }
 }

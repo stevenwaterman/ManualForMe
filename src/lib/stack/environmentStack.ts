@@ -6,38 +6,61 @@ import {
   UserPoolClientIdentityProvider
 } from '@aws-cdk/aws-cognito'
 import { AttributeType, BillingMode, Table } from '@aws-cdk/aws-dynamodb'
-import { CfnStage, HttpApi, HttpApiAttributes } from '@aws-cdk/aws-apigatewayv2'
+import { CfnDeployment, CfnStage, HttpApi } from '@aws-cdk/aws-apigatewayv2'
 import { BucketDeployment, Source } from '@aws-cdk/aws-s3-deployment'
 import { Bucket } from '@aws-cdk/aws-s3'
-import {
-  CloudFrontWebDistribution,
-  CloudFrontWebDistributionAttributes
-} from '@aws-cdk/aws-cloudfront'
+import { CloudFrontWebDistribution } from '@aws-cdk/aws-cloudfront'
+import { NodejsFunction } from '@aws-cdk/aws-lambda-nodejs'
+import { ARecord, HostedZone, RecordTarget } from '@aws-cdk/aws-route53'
+import { UserPoolDomainTarget } from '@aws-cdk/aws-route53-targets'
+import { Certificate } from '@aws-cdk/aws-certificatemanager'
+import { GlobalInfo } from './globalStack'
 
 export class EnvironmentStack extends Stack {
   constructor({
     scope,
     id,
-    props
+    props,
+    globalInfo
   }: {
     scope: Construct
     id: string
-    props: StackProps & {
-      distributionAttributes: CloudFrontWebDistributionAttributes
-      bucketArn: string
-      apiAttributes: HttpApiAttributes
-      userPoolId: string
-    }
+    props: StackProps
+    globalInfo: GlobalInfo
   }) {
     super(scope, id, props)
 
-    const siteBucket = Bucket.fromBucketArn(this, 'Bucket', props.bucketArn)
+    const siteUrl = 'manualfor.me'
+    const authPrefix = 'credentials'
+    const authUrl = `${authPrefix}.${siteUrl}`
+
+    const siteBucket = Bucket.fromBucketArn(
+      this,
+      'Bucket',
+      globalInfo.bucketArn
+    )
     const distribution = CloudFrontWebDistribution.fromDistributionAttributes(
       this,
       'Distribution',
-      props.distributionAttributes
+      globalInfo.distributionAttributes
+    )
+    const certificate = Certificate.fromCertificateArn(
+      this,
+      'Certificate',
+      globalInfo.certificateArn
+    )
+    const zone = HostedZone.fromHostedZoneAttributes(
+      this,
+      'Zone',
+      globalInfo.zoneAttributes
+    )
+    const api = HttpApi.fromHttpApiAttributes(
+      this,
+      'Api',
+      globalInfo.apiAttributes
     )
 
+    // DB
     new Table(this, 'Table', {
       tableName: 'widgets',
       partitionKey: { name: 'username', type: AttributeType.STRING },
@@ -45,7 +68,48 @@ export class EnvironmentStack extends Stack {
       removalPolicy: RemovalPolicy.DESTROY
     })
 
-    const userPool = UserPool.fromUserPoolId(this, 'UserPool', props.userPoolId)
+    // Auth
+    const preSignUp = new NodejsFunction(this, 'PreSignUpFn', {
+      entry: `src/resources/auth/preSignUp.ts`
+    })
+
+    const userPool = new UserPool(this, 'pool', {
+      userPoolName: 'manualforme-userpool',
+      selfSignUpEnabled: true,
+      enableSmsRole: false,
+      standardAttributes: {
+        fullname: {
+          mutable: true,
+          required: true
+        },
+        email: {
+          mutable: true,
+          required: true
+        }
+      },
+      passwordPolicy: {
+        requireDigits: false,
+        requireLowercase: false,
+        requireSymbols: false,
+        requireUppercase: false
+      },
+      signInCaseSensitive: false,
+      removalPolicy: RemovalPolicy.DESTROY,
+      lambdaTriggers: { preSignUp }
+    })
+
+    const domain = userPool.addDomain('PoolDomain', {
+      customDomain: {
+        domainName: authUrl,
+        certificate
+      }
+    })
+
+    new ARecord(this, 'ARecord_auth', {
+      zone: zone,
+      recordName: authUrl,
+      target: RecordTarget.fromAlias(new UserPoolDomainTarget(domain))
+    })
 
     const userPoolClient = userPool.addClient('AppClient', {
       generateSecret: true,
@@ -67,8 +131,7 @@ export class EnvironmentStack extends Stack {
       supportedIdentityProviders: [UserPoolClientIdentityProvider.COGNITO]
     })
 
-    const api = HttpApi.fromHttpApiAttributes(this, 'Api', props.apiAttributes)
-
+    // Api
     new CfnStage(this, 'Stage', {
       apiId: api.apiId,
       stageName: 'api',
@@ -76,7 +139,12 @@ export class EnvironmentStack extends Stack {
         throttlingRateLimit: 20,
         throttlingBurstLimit: 5
       },
-      autoDeploy: true
+      autoDeploy: false
+    })
+
+    new CfnDeployment(this, 'Deployment', {
+      apiId: api.apiId,
+      stageName: 'api'
     })
 
     new WidgetService(this, 'Widgets', { api, userPool, userPoolClient })
