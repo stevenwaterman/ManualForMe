@@ -1,0 +1,1 @@
+[https://randsinrepose.com/archives/how-to-rands/](https://randsinrepose.com/archives/how-to-rands/)

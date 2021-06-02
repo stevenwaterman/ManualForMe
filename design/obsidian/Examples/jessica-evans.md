@@ -1,0 +1,1 @@
+[https://jocosity.ca/user-manual-of-jessica-evans/](https://jocosity.ca/user-manual-of-jessica-evans/)

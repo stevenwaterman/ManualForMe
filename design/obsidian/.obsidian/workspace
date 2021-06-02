@@ -1,0 +1,102 @@
+{
+  "main": {
+    "id": "0fe36659d39d30e2",
+    "type": "split",
+    "children": [
+      {
+        "id": "7069ddc2f1acd0b4",
+        "type": "leaf",
+        "state": {
+          "type": "markdown",
+          "state": {
+            "file": "Goal.md",
+            "mode": "source"
+          }
+        }
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "6f6359e786374b55",
+    "type": "split",
+    "children": [
+      {
+        "id": "f0cdf67d84642975",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "4a390d2527da862b",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {}
+            }
+          },
+          {
+            "id": "d2c5f15c74f5acd9",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "e6dca2b719875d15",
+    "type": "split",
+    "children": [
+      {
+        "id": "d72543c81dbf0d47",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "d43f5575dd1a4c55",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "Goal.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "active": "7069ddc2f1acd0b4",
+  "lastOpenFiles": [
+    "Goal.md",
+    "Questions.md",
+    "Home.md",
+    "Examples/rands.md",
+    "Examples/daniel-thomason.md",
+    "Examples/madison-taskett.md",
+    "Examples/pete-vowles.md",
+    "Examples/matt.md",
+    "Pages/Profile.md",
+    "Pages/profile/Profile_NoAuth.md"
+  ]
+}
