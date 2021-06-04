@@ -8,3 +8,7 @@ node_modules
 cdk.out
 cdk.context.json
 cdk.synth.yml
+
+# Obsidian workspace settings
+/design/obsidian/.obsidian
+

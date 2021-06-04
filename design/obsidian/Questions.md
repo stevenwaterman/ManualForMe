@@ -98,15 +98,14 @@ Mission Statement:
 - If you're going to call me, you should message first
 
 ## Context
-- I find it easy to switch between different tasks
+- I hate being interrupted when I'm focussed on a task
 - I enjoy small-talk
-- It's frustrating when people send me reminders
+- I'd like people to send me a reminder if they think i've forgotten about something
 - I'm a good listener
 
 ## Content
 - I'm an optimistic person
 - I'm a very empathetic person
-- I bring my whole self to work
 - I tend to be quite blunt
 - I naturally give praise to people
 - I avoid giving negative feedback
@@ -136,8 +135,8 @@ Mission Statement:
 - Working hours
 - I struggle to concentrate in noisy environments
 - I need my own space in an office
-- I don't mind being interrupted while I'm working
 - I prefer to work remotely
+	- Maybe a % ideal, % ok, etc
 
 # Known Bugs (????)
 > Specific negative actions that colleagues should be aware of and mitigate against
