@@ -1,14 +1,22 @@
 <script lang="ts">
   import cssVars from 'svelte-css-vars';
 
-  export let value: number = 0
+  export let value: number = 0;
+  export let width: number = 50;
+  export let circleCount: number = 7;
+  $: height = width / Math.max(10, circleCount + 1);
+  $: circleDiameter = height;
+  $: widthUsedForCircles = circleDiameter * circleCount;
+  $: connectors = circleCount - 1;
+  $: widthUsedForConnectors = width - widthUsedForCircles;
+  $: connectorWidth = widthUsedForConnectors / connectors;
+  $: sectionWidth = circleDiameter + connectorWidth;
 
-  const width: number = 50;
-  const css = {
+  $: css = {
     width: `${width}vw`,
-    height: `${width/10}vw`,
-    bgSize: `${width/7}vw ${width/7}vw`,
-    padding: `calc(${width/50}vw + 1px)`
+    height: `${height}vw`,
+    bgWidth: `${sectionWidth}vw`,
+    circleRadius: `${circleDiameter/2}vw`
   }
 
   const labels = {
@@ -16,6 +24,11 @@
     mid: "Balanced",
     max: "With others"
   }
+
+  // TODO make the SPAN elements into labels
+  // TODO fix styling on non-chrome browsers
+  // TODO use responsive sizing, max of % and px amount
+  // TODO check it works for different number of circles
 </script>
 
 <style>
@@ -23,16 +36,34 @@
     -webkit-appearance: none;
     border: none;
     cursor: pointer;
-    background-image: radial-gradient(ellipse at center, var(--background) calc(40% - 1px), var(--border) 40%, var(--border) calc(40% + 1px), transparent calc(40% + 2px)), linear-gradient(var(--background) calc(50% - 1.5px), var(--border) 50%, var(--background) calc(50% + 1.5px));
+    background-image: 
+      radial-gradient(
+        closest-side circle at center, 
+        white calc(99% - 3px), 
+        var(--border) calc(99% - 2px),
+        var(--border) calc(100% - 1px), 
+        transparent 100%
+      ),
+      radial-gradient(
+        closest-side circle at center, 
+        var(--background) 105%,
+        transparent calc(105% + 2px)
+      ),
+      linear-gradient(
+        var(--background) calc(49.5% - 1.5px), 
+        var(--border) 49.5%, 
+        var(--border) 50.5%, 
+        var(--background) calc(50.5% + 1.5px)
+      );
     background-position: center;
     background-repeat: repeat-x;
-    background-size: var(--bgSize);
+    background-size: var(--bgWidth) var(--height);
     width: var(--width);
     height: var(--height);
     outline: 0;
     margin: 0;
+    padding: 0;
     box-sizing: border-box;
-    padding: var(--padding);
   }
 
   /*Chrome*/
@@ -40,7 +71,12 @@
     -webkit-appearance: none;
     height: var(--height);
     width: var(--height);
-    background-image: radial-gradient(ellipse at center, var(--highlight) 48%, transparent 50%);
+    background-image: 
+      radial-gradient(
+        closest-side circle at center, 
+        var(--highlight) calc(90% - 4px), 
+        transparent calc(90% - 2px)
+      );
     background-position: center;
     background-size: 100% 100%;
     cursor: col-resize;
@@ -96,36 +132,60 @@
 
 
   .labels {
-    display: flex;
-    flex-direction: row;
     width: var(--width);
-    justify-content: space-between;
     height: 20px;
-  }
-
-  .labelWrapper {
-    flex-basis: 0;
-    flex: 1 1 0;
     position: relative;
   }
 
-  .label {
+  .anchor {
     position: absolute;
+    height: 20px;
+    top: 0;
+    bottom: 0;
     text-align: center;
+  }
+
+  .left {
+    left: var(--circleRadius);
+    transform: translateX(-50%);
+  }
+
+  .middle {
     left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    white-space: nowrap;
+    transform: translateX(-50%);
+  }
+
+  .right {
+    right: var(--circleRadius);
+    transform: translateX(50%);
+  }
+
+  .column {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
   }
 </style>
 
-<div class="labels" use:cssVars={css}>
-  <div class="labelWrapper"><span class="label">{labels.min}</span></div>
-  <div class="labelWrapper"></div>
-  <div class="labelWrapper"></div>
-  <div class="labelWrapper"><span class="label">{labels.mid}</span></div>
-  <div class="labelWrapper"></div>
-  <div class="labelWrapper"></div>
-  <div class="labelWrapper"><span class="label">{labels.max}</span></div>
+<div class="column">
+  <div class="labels" use:cssVars={css}>
+    <span class="anchor left">
+      {labels.min}
+    </span>
+    <span class="anchor middle">
+      {labels.mid}
+    </span>
+    <span class="anchor right">
+      {labels.max}
+    </span>
+  </div>
+  <input 
+    type="range" 
+    min={Math.floor(- (circleCount - 1) / 2)} 
+    max={Math.floor(circleCount / 2)} 
+    step="1" 
+    bind:value use:cssVars={css}
+  />
 </div>
-<input type="range" min="-3" max="3" step="1" bind:value use:cssVars={css}/>
+
