@@ -7,8 +7,6 @@
   export let size: string = "10px";
   export let tooltip: string;
 
-  $: css = { size };
-
   export let selected: boolean = false;
   export let value: string;
   export let defaultValue: string;
@@ -37,6 +35,6 @@
   }
 </style>
 
-<div class="icon" class:selected={selected} use:cssVars={css} on:click={tryDeselect}>
+<div class="icon" class:selected={selected} use:cssVars={{ size }} on:click={tryDeselect}>
   <FontAwesomeIcon icon={icon} style="vertical-align: 0;" title={tooltip}/>
 </div>

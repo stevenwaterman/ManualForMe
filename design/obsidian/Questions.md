@@ -137,8 +137,7 @@ Mission Statement:
 # Visionary vs Implementer
 > Do you prefer early in projects when there is lots of possibilities, or later when it's about getting it finished
 
-- I enjoy technical debates
-	- Agree -> Disagree
+
 - I'm happiest when starting work on a new project or feature
 	- Agree -> Disagree
 
@@ -171,74 +170,96 @@ Mission Statement:
 	- Alone -> Pair Programming
 
 
+# Communication Methods
+> Practical advice on how to contact you
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Communication
-> How best to talk to me
-
-## Methods
 - Communication styles in different contexts
+	- Matrix of communication styles and communication contexts
+	- Preferred, acceptable, forbidden
 - Languages
+	- Select a language, select proficiency
 
-## Practical
 - I expect people to respond quickly to my messages
-- I respond quickly to people's messages
+	- Agree -> Disagree
+- I will respond to your message \_\_\_\_\_\_
+	- Eventually -> Immediately
 - If you're going to call me, you should message first
+	- Agree -> Disagree
 
-## Context
 - I hate being interrupted when I'm focussed on a task
-- I enjoy small-talk
+	- Agree -> Disagree
+- I enjoy small-talk before getting to the main point of discussion
+	- Agree -> Disagree
 - I'd like people to send me a reminder if they think i've forgotten about something
+	- Agree -> Disagree
 - I'm a good listener
+	- Agree -> Disagree
 
-## Content
-- I'm an optimistic person
+# Content
+> What kind of conversation you will end up having
+
+- People would describe me as \_\_\_\_\_\_
+	- Optimistic -> Pessimistic
 - I'm a very empathetic person
+	- Agree -> Disagree
 - I tend to be quite blunt
-- I naturally give praise to people
+	- Agree -> Disagree
+- I \_\_\_\_\_\_\_ give praise to people
+	- Never -> Often
 - I avoid giving negative feedback
-- If someone upset me, I'd let them know
-- I'm naturally supportive, and will jump in to help others without being asked
+	- Agree -> Disagree
+- If someone upset me, I would \_\_\_\_\_\_
+	- Try to ignore it -> Confront them
+- I \_\_\_\_\_\_\_ will jump in to help others without being asked
+	- Never -> Often
 - I avoid conflict at all costs
+	- Agree -> Disagree
+- I enjoy technical debates
+	- Agree -> Disagree
 
-## Communication Style
+# Negotiating Style
+> How you resolve conflict
+
 - I stand up for my ideas when I know I'm right
+	- Agree -> Disagree
 - Maintaining our relationship is more important than getting the outcome I want
-- I sometimes take things personally during an intense debate
+	- Agree -> Disagree
+- I \_\_\_\_\_\_\_ take things personally during an intense debate
+	- Never -> Often
 - I listen to my head, not my heart
+	- Agree -> Disagree
 
-## How to ask things of me
-- I need to understand *why* you're asking me to do something
+# How to ask things of me
+> How to make me want to help
+
+- My priority is understanding \_\_\_\_\_ you're asking me
+	- What -> Why
 - I can read between the lines
+	- Agree -> Disagree
 - I need clear goals to aim for
+	- Agree -> Disagree
 - I'm motivated by deadlines
+	- Agree -> Disagree
 - I benefit from praise and positive feedback
+	- Agree -> Disagree
 - I handle constructive criticism well
+	- Agree -> Disagree
 - I don't celebrate my own achievements enough
+	- Agree -> Disagree
 
 # Working Patterns
 > Practical aspects of how i work
 
 - Timezone + Current Time in that time zone
+	- Drop-Down / Location
 - Working hours
+	- Matrix, 95% yes, 95% no
 - I struggle to concentrate in noisy environments
+	- Agree -> Disagree
 - I need my own space in an office
+	- Agree -> Disagree
 - I prefer to work remotely
+	- Sliders: min %, max %, preferred %
 	- Maybe a % ideal, % ok, etc
 
 # Known Bugs (????)

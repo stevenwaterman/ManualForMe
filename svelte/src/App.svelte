@@ -18,6 +18,8 @@
 
   .container {
     color: var(--text);
+    width: min(1200px, 80%);
+    margin: auto;
   }
 </style>
 

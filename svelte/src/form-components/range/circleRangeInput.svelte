@@ -48,6 +48,7 @@
     background-position: center;
     background-repeat: repeat-x;
     background-size: calc(var(--sectionWidth)) calc(var(--height));
+    background-color: var(--background);
     width: calc(var(--width));
     height: calc(var(--height));
     outline: 0;

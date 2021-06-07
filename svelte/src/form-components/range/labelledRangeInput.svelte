@@ -1,20 +1,8 @@
 <script lang="ts">
   import cssVars from 'svelte-css-vars';
-  import Importance from './importance.svelte';
-  import Slider from './slider.svelte';
-  import NextButton from './nextButton.svelte';
+  import Slider from './circleRangeInput.svelte';
 
   export let sliderValue: number;
-  export let importanceValue: "low" | "mid" | "high";
-  export let value: {
-    slider: number;
-    importance: "low" | "mid" | "high";
-  }
-  $: value = {
-    slider: sliderValue,
-    importance: importanceValue
-  }
-
   export let sliderMaxWidthPerecent: number = 50;
   export let sliderMaxWidthPx: number = 600;
 
@@ -26,7 +14,7 @@
   let widthRatio: number;
   $: widthRatio = Math.max(10, circleCount + 1);
 
-  let cssHeight: string;
+  export let cssHeight: string;
   $: cssHeight = `(${cssWidth} / ${widthRatio})`;
 
   let cssCircleDiameter: string;
@@ -103,49 +91,27 @@
     justify-content: center;
     align-items: center;
   }
-
-  .row {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: flex-end;
-  }
 </style>
 
-<div class="row">
-  <div class="column">
-    <div class="labels" use:cssVars={css}>
-      <span class="anchor left">
-        {labels.min}
-      </span>
-      <span class="anchor middle">
-        {labels.mid}
-      </span>
-      <span class="anchor right">
-        {labels.max}
-      </span>
-    </div>
-      <Slider
-        min={Math.floor(- (circleCount - 1) / 2)} 
-        max={Math.floor(circleCount / 2)}
-        width={cssWidth}
-        height={cssHeight}
-        sectionWidth={cssSectionWidth}
-        circleRadius={cssCircleRadius}
-        bind:value={sliderValue}
-      />
+<div class="column">
+  <div class="labels" use:cssVars={css}>
+    <span class="anchor left">
+      {labels.min}
+    </span>
+    <span class="anchor middle">
+      {labels.mid}
+    </span>
+    <span class="anchor right">
+      {labels.max}
+    </span>
   </div>
-
-  <div style={`width: calc(${cssConnectorWidth} * 2)`}/>
-
-  <div class="column">
-    <div class="labels" use:cssVars={{width: "0px"}}>
-      <span class="anchor middle">Importance</span>
-    </div>
-    <Importance bind:value={importanceValue} size={cssHeight} separation={`calc(${cssConnectorWidth} / 2)`}/>
-  </div>
-
-  <div style={`width: calc(${cssConnectorWidth} * 2)`}/>
-  
-  <NextButton/>
+    <Slider
+      min={Math.floor(- (circleCount - 1) / 2)} 
+      max={Math.floor(circleCount / 2)}
+      width={cssWidth}
+      height={cssHeight}
+      sectionWidth={cssSectionWidth}
+      circleRadius={cssCircleRadius}
+      bind:value={sliderValue}
+    />
 </div>
