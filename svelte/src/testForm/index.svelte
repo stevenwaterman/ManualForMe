@@ -1,22 +1,29 @@
 <script lang="ts">
-  import Importance from "../form-components/importance.svelte";
-  import Slider from "../form-components/slider.svelte";
+  import ImportanceSlider from "../form-components/importanceSlider.svelte";
+import NextButton from "../form-components/nextButton.svelte";
   import Underline from "../form-components/underline.svelte";
-  let value: number;
+  let value: {
+    slider: number;
+    importance: "low" | "mid" | "high";
+  };
 </script>
 
 <style>
   .column {
-    width: 100%;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
   }
+
+  h1 {
+    margin-bottom: 2em;
+    margin-left: 1em;
+    margin-right: 1em;
+  }
 </style>
 
 <div class="column">
   <h1>When I feel drained, I prefer to recharge by spending time <Underline length={15}/></h1>
-  <Slider bind:value width={25}/>
-  <Importance/>
+  <ImportanceSlider bind:value/>
 </div>

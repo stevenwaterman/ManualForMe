@@ -2,7 +2,11 @@
   import { faExclamationCircle, faBan } from '@fortawesome/free-solid-svg-icons';
   import ToggleIcon from './toggleIcon.svelte';
 
-  let priority: "low" | "mid" | "high" = "mid";
+  export let value: "low" | "mid" | "high" = "mid";
+  export let size: string;
+  export let separation: string;
+  
+  // TODO fix display: none for a11y
 </script>
 
 <style>
@@ -17,18 +21,17 @@
 </style>
 
 <div class="row">
-  <label>
-    <ToggleIcon icon={faBan} selected={priority === "low"} bind:value={priority} defaultValue="mid" size="4x"/>
-    <input type=radio bind:group={priority} value="low">
+  <label for="lowPriorityRadio">
+    <ToggleIcon icon={faBan} selected={value === "low"} bind:value={value} defaultValue="mid" size={size} tooltip="Low Importance"/>
+    <input type=radio id="lowPriorityRadio" bind:group={value} value="low">
   </label>
 
-  <input type=radio bind:group={priority} value="mid">
+  <div style={`width: ${separation};`}/>
 
-  <label>
-    <ToggleIcon icon={faExclamationCircle} selected={priority === "high"} bind:value={priority} defaultValue="mid" size="4x"/>
-    <input type=radio bind:group={priority} value="high">
+  <input type=radio bind:group={value} value="mid">
+
+  <label for="highPriorityRadio">
+    <ToggleIcon icon={faExclamationCircle} selected={value === "high"} bind:value={value} defaultValue="mid" size={size} tooltip="High Importance"/>
+    <input type=radio id="highPriorityRadio" bind:group={value} value="high">
   </label>
-
-
 </div>
-{priority}

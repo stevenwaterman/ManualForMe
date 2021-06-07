@@ -1,13 +1,17 @@
 <script lang="ts">
   import type { IconDefinition } from "@fortawesome/free-solid-svg-icons";
   import { FontAwesomeIcon } from "fontawesome-svelte";
+  import cssVars from 'svelte-css-vars';
+
   export let icon: IconDefinition;
-  export let size: string = "lg";
+  export let size: string = "10px";
+  export let tooltip: string;
 
-  export let selected;
+  $: css = { size };
 
-  export let value;
-  export let defaultValue;
+  export let selected: boolean = false;
+  export let value: string;
+  export let defaultValue: string;
 
   function tryDeselect() {
     if (selected) {
@@ -22,8 +26,10 @@
   .icon {
     color: var(--border);
     cursor: pointer;
-    transition: color 0.25s ease;
-    margin: 0.5em;
+    transition: color 0.1s ease;
+    font-size: calc(var(--size));
+    width: calc(var(--size));
+    height: calc(var(--size));
   }
 
   .selected {
@@ -31,6 +37,6 @@
   }
 </style>
 
-<div class="icon" class:selected={selected} on:click={tryDeselect}>
-  <FontAwesomeIcon icon={icon} size={size}/>
+<div class="icon" class:selected={selected} use:cssVars={css} on:click={tryDeselect}>
+  <FontAwesomeIcon icon={icon} style="vertical-align: 0;" title={tooltip}/>
 </div>

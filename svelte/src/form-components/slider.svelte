@@ -2,33 +2,23 @@
   import cssVars from 'svelte-css-vars';
 
   export let value: number = 0;
-  export let width: number = 50;
-  export let circleCount: number = 7;
-  $: height = width / Math.max(10, circleCount + 1);
-  $: circleDiameter = height;
-  $: widthUsedForCircles = circleDiameter * circleCount;
-  $: connectors = circleCount - 1;
-  $: widthUsedForConnectors = width - widthUsedForCircles;
-  $: connectorWidth = widthUsedForConnectors / connectors;
-  $: sectionWidth = circleDiameter + connectorWidth;
+
+  export let width: string;
+  export let height: string;
+  export let sectionWidth: string;
+  export let circleRadius: string;
+  
+  export let min: number;
+  export let max: number;
 
   $: css = {
-    width: `${width}vw`,
-    height: `${height}vw`,
-    bgWidth: `${sectionWidth}vw`,
-    circleRadius: `${circleDiameter/2}vw`
+    width,
+    height,
+    sectionWidth,
+    circleRadius
   }
 
-  const labels = {
-    min: "Alone",
-    mid: "Balanced",
-    max: "With others"
-  }
-
-  // TODO make the SPAN elements into labels
   // TODO fix styling on non-chrome browsers
-  // TODO use responsive sizing, max of % and px amount
-  // TODO check it works for different number of circles
 </script>
 
 <style>
@@ -57,9 +47,9 @@
       );
     background-position: center;
     background-repeat: repeat-x;
-    background-size: var(--bgWidth) var(--height);
-    width: var(--width);
-    height: var(--height);
+    background-size: calc(var(--sectionWidth)) calc(var(--height));
+    width: calc(var(--width));
+    height: calc(var(--height));
     outline: 0;
     margin: 0;
     padding: 0;
@@ -69,13 +59,13 @@
   /*Chrome*/
   input[type=range]::-webkit-slider-thumb {
     -webkit-appearance: none;
-    height: var(--height);
-    width: var(--height);
+    height: calc(var(--height));
+    width: calc(var(--height));
     background-image: 
       radial-gradient(
         closest-side circle at center, 
-        var(--highlight) calc(90% - 4px), 
-        transparent calc(90% - 2px)
+        var(--highlight) calc(70% - 4px), 
+        transparent calc(70% - 2px)
       );
     background-position: center;
     background-size: 100% 100%;
@@ -84,7 +74,6 @@
 
   input[type=range]:focus::-webkit-slider-thumb {
   }
-
 
 
 
@@ -127,65 +116,14 @@
   input[type=range]::-ms-fill-upper {
     background: none;
   }
-
-
-
-
-  .labels {
-    width: var(--width);
-    height: 20px;
-    position: relative;
-  }
-
-  .anchor {
-    position: absolute;
-    height: 20px;
-    top: 0;
-    bottom: 0;
-    text-align: center;
-  }
-
-  .left {
-    left: var(--circleRadius);
-    transform: translateX(-50%);
-  }
-
-  .middle {
-    left: 50%;
-    transform: translateX(-50%);
-  }
-
-  .right {
-    right: var(--circleRadius);
-    transform: translateX(50%);
-  }
-
-  .column {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
-  }
 </style>
 
-<div class="column">
-  <div class="labels" use:cssVars={css}>
-    <span class="anchor left">
-      {labels.min}
-    </span>
-    <span class="anchor middle">
-      {labels.mid}
-    </span>
-    <span class="anchor right">
-      {labels.max}
-    </span>
-  </div>
-  <input 
-    type="range" 
-    min={Math.floor(- (circleCount - 1) / 2)} 
-    max={Math.floor(circleCount / 2)} 
-    step="1" 
-    bind:value use:cssVars={css}
-  />
-</div>
+<input 
+  type="range" 
+  min={min} 
+  max={max}
+  step="1" 
+  bind:value
+  use:cssVars={css}
+/>
 
