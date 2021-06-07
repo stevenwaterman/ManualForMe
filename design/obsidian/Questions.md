@@ -3,87 +3,190 @@ Mission Statement:
 > Enable people to work together easily by documenting how they work and sharing it openly
 
 # Bio
+> To confirm you have the right person
+> To inform basics of communication with a person
+> Introductions
+> For everyone
+
 - Name
+	- 2 inputs
+		- Full name | free text 1 line
+			- To display on their profile
+			- Tells viewer that they have the right person
+		- Preferred name | free text 1 line
+			- To use in text elsewhere on the site
+			- To display on their profile
+			- Tells viewer what to name to use
 - Pronouns
+		- Drop-Down
+			- He/Him
+			- She/Her
+			- They/Them
+			- Prefer not to say
+			- Custom / Other (multiple free text fields (he / him / his + plural/singular))
+		- To use elsewhere on the site
+		- For the viewer to use when talking about them
 - Photo
+	- Upload
+	- Tells viewer they have the right person
+	- Makes it feel more personable
 - Contact details
+	- Drop down to select platform, free text to fill in details
+	- Tells viewer they have the right person
+	- lets the viewer get in contact
 - Tagline
 	- One sentence of flavour text describing your personality and how you work
+	- Free text, 140 character limit
+	- Makes it feel more personable
 
 # About Me
-> Stuff to talk to me about
+> Contextualise who the person is at work, their knowledge
+> Provide some icebreaker topics
+> For everyone
 
-- Work domains
-- Technologies
-- CV intro
+- Me at home
+	- Paragraph free text, prompt to talk about the things you do at home, hobbies, likes/dislikes, pets etc.
+	- Ice breaker
+- Me at work
+	- Paragraph free text, prompt to talk about the things you do at work, your current role, tech stacks, interests, etc
+	- Gives context to working relationship
 
-- Favourite things
-- Likes
-- Dislikes
-- Hobbies
-- Icebreakers
+# Motivators
+> What drives someone to come to work
+> What makes them burn out
+> Mostly for managers
 
-# The Project
-> The kind of project I work best on
-
-- I'm more motivated by computer problems than people problems
-- I can't work on a project that doesn't interest me
-- I'd rather work on one big feature than lots of small ones
+> Role Domain:
+- I'm most motivated by \_\_\_\_\_\_\_ problems
+	- Computer -> people
 - My work needs to make a difference in the world
+	- Agree -> disagree
 - I couldn't work on a project that I thought was unethical
-- I'd rather work on a prototype than the real thing
-	- What is this question trying to determine?
-- What we learn along the way is more important than the finished product
-- Users generally know the main problems with our product
-- The project needs a clear vision and direction
-- I'd rather delay the project than release something bad
-- It's better to take risks and clean up the mess than to go slow and miss an opportunity
+	- Agree -> disagree
+	- What kind of project to put someone on, what question to ask
+- My ideal project would move \_\_\_\_\_\_\_\_ 
+	- Slow & steady -> Fast & break things
+	- Speed / Carefulness
+	- Ideal team size + velocity + culture
+
+> Intrinsic vs Extrinsic Motivation:
+- I can't work on a project that doesn't interest me
+	- Agree -> disagree
+- I'd rather release the product \_\_\_\_\_\_\_\_
+	- Late -> Unfinished
 - I'd be happy if every day was the same
+	- Agree -> disagree
 
-# My Team
-> The kind of teams I work best in
-
-- I work best when I'm told what to do in detail
-- I enjoy technical debates
-- Social events help me to feel part of a team
-- I appreciate when people reach out and offer support spontaneously
-- I prefer when the team has a clear hierarchy
-- I prefer having defined roles in the team
-- I prefer when there are clear processes to follow
-- I try to avoid work politics
-- I try to keep my work life and my social life separate
-- I tend to be quite formal and serious at work
-- The team should look out for each other and have a sense of camaraderie
-- I should feel a sense of belonging in my team
-- I'd rather finish what I'm working on before showing it to people
-- I prioritise the team's goals over my individual goals
-- I need my contributions to be recognised
-
-# My Work
-> How I work day-to-day
-
-- I'm happiest when starting work on a new project or feature
-- I'm more of a specialist than a generalist
-- I don't act until there's a plan
-- I'm feel drained after an emergency
-	- ??? shut down
-	- I panic during an emergency and get stressed
-	- Emergencies have no effect on me
-	- I do more work during emergencies but feel drained afterwards
-	- I enjoy emergencies, they are the best bit of the job
-		- I enjoy emergencies
-		- I find emergencies stressful
-		- I wouldn't want to always be handling an emergency / putting out fires
-- I can easily juggle many tasks at once
-- I need to constantly learn new things
-- I'm drained by social interaction and need time to recharge
-	- One slider for % time spent alone vs social?
-- I'm at my best when working on a task with others
-	- How to make it clearing this is asking about eg pairing
-- I take on more work than I can handle
-	- Maybe a slider from having not enough work to having too much work
+> Journey vs Destination Motivation:
+- I'd rather work on one big feature than lots of small ones
+	- Agree -> disagree
+- I'd rather work on \_\_\_\_\_\_\_ Software
+	- Prototype -> Production
+- A project's success is measured by \_\_\_\_\_\_
+	- What we learn -> What we deliver
+- Users generally know the main problems with our product
+	- Agree -> Disagree
+- I'm happiest when a project has \_\_\_\_\_\_\_
+	- Clear Vision & Direction -> Limitless possibilities
 - I get fed up working on a task if we don't see the results for a long time
+	- Agree -> Disagree
+
+# Structure
+> How close management & guidance a person needs
+
+- I work best when I'm \_\_\_\_\_\_\_\_
+	- Assigned tasks -> Left to explore
+- I prefer a team structure with \_\_\_\_\_\_\_\_
+	- Clear Hierarchy -> No Hierarchy
+- I prefer working in a team with defined roles
+	- Agree -> Disagree
+- I prefer when there are clear processes to follow
+	- Agree -> Disagree
+- I sometimes wait too long before asking for help
+	- Agree -> Disagree
+- I don't act until there's a plan
+	- Agree -> Disagree
+
+# Live to Work
+> Separation of work and home life
+> Friendship with team
+
+- Social events help me to feel part of a team
+	- Agree -> Disagree
+- I try to avoid work politics
+	- Agree -> Disagree
+- At work I'm \_\_\_\_\_\_\_\_
+	- Formal & Serious -> Lighthearted
+- I try to keep my work life and my social life separate
+	- Agree -> Disagree
+- A team should look out for each other and have a sense of camaraderie
+	- Agree -> Disagree
+- I need to feel a sense of belonging in my team
+	- Agree -> Disagree
+
+# Collectivism vs Individualism
+> Do you view yourself primarily as part of a unit, or as an individual
+
+- I'd rather show people what I'm working on \_\_\_\_\_\_
+	- As soon as possible -> When it's finished
+- I prioritise my \_\_\_\_\_\_\_\_ goals
+	- team's -> individual
+- I need my contributions to be recognised
+	- Agree -> Disagree
+
+# Visionary vs Implementer
+> Do you prefer early in projects when there is lots of possibilities, or later when it's about getting it finished
+
+- I enjoy technical debates
+	- Agree -> Disagree
+- I'm happiest when starting work on a new project or feature
+	- Agree -> Disagree
+
+# Focus
+> Do you work best when there is one important thing or lots of little things
+- Work is more \_\_\_\_\_ when there is an emergency
+	- Stressful -> Enjoyable
+- I can easily juggle many tasks at once
+	- Agree -> Disagree
+- I tend to end up with \_\_\_\_\_ things to work on
+	- Too many -> not enough
+
+# Growth
+> How much does personal development matter to you?
+
+- I'm more of a \_\_\_\_\_\_
+	- Specialist -> Generalist
+- I need to constantly learn new things
+	- Agree -> Disagree
 - I need to know how things work under the hood
+	- Agree -> Disagree
+
+
+# Team Work
+> How closely you like to work with others
+
+- When I feel drained, I recharge by spending time \_\_\_\_\_\_
+	- Alone -> With others
+- I do my best work when \_\_\_\_\_
+	- Alone -> Pair Programming
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # Communication
 > How best to talk to me
@@ -154,3 +257,6 @@ Mission Statement:
 - I'm homeschooling because of covid
 - I'm a carer
 - I'm depressed
+
+
+
