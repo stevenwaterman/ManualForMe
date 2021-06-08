@@ -1,10 +1,10 @@
 <script lang="ts">
-  import RangeInput from "../form-components/range/labelledRangeInput.svelte";
-  import NextButton from "../form-components/nextButton.svelte";
-  import Underline from "../form-components/underline.svelte";
-  import Importance from "../form-components/importance.svelte";
-import Explanation from "../form-components/explanation.svelte";
-import Visibility from "../form-components/visibility.svelte";
+  import RangeInput from "../../range/labelledRangeInput.svelte";
+  import NextButton from "../../nextButton.svelte";
+  import Underline from "../../underline.svelte";
+  import Importance from "../../importance.svelte";
+  import Explanation from "../../explanation.svelte";
+  import Visibility from "../../visibility.svelte";
 
   let answer: number;
   let importance: "low" | "mid" | "high";

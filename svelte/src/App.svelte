@@ -3,7 +3,7 @@
   import Home from "./home/index.svelte";
   import AuthSuccess from './authSuccess/index.svelte';
   import NotFound from "./notFound/index.svelte";
-  import TestForm from "./testForm/index.svelte";
+  import MatrixQuestion from "./questions/matrixQuestion/index.svelte";
   import cssVars from 'svelte-css-vars';
   import { colors } from './colors';
 
@@ -28,7 +28,7 @@
     <Router>
       <Route path="/" component={Home}/>
       <Route path="authSuccess" component={AuthSuccess}/>
-      <Route path="form" component={TestForm}/>
+      <Route path="form" component={MatrixQuestion}/>
       <Route component={NotFound}/>
     </Router>
   </div>

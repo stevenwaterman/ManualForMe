@@ -1,5 +1,6 @@
 <script lang="ts">
   export let explanation: string;
+  // TODO add character count            mzsxxxxxxxxxx
 </script>
 
 <style>
