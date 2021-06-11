@@ -3,6 +3,7 @@
   import { faTimes, faCheck } from '@fortawesome/free-solid-svg-icons';
 
   export let value: "cross" | "blank" | "tick" = "blank";
+  export let disabled: boolean = false;
 
   function leftClick() {
     if (value === "tick") value = "blank";
@@ -31,34 +32,47 @@
     height: 50px;
     margin: 0;
 
-    cursor: pointer;
     position: relative;
+  }
+
+  button:enabled {
+    cursor: pointer;
   }
 
   button:active {
     background-color: white;
   }
 
+  button.ticked {
+    background-color: var(--highlight);
+  }
+
+  button.crossed {
+    background-color: var(--error);
+  }
+
   .cross {
-    color: var(--error);
+    color: var(--background);
     position: absolute;
-    top: 10%;
-    right: 10%;
-    bottom: 10%;
-    left: 10%;
+    top: 0%;
+    right: 0%;
+    bottom: 0%;
+    left: 0%;
+    padding: 5px;
   }
 
   .tick {
-    color: var(--highlight);
+    color: var(--background);
     position: absolute;
-    top: 15%;
-    right: 15%;
-    bottom: 15%;
-    left: 15%;
+    top: 0%;
+    right: 0%;
+    bottom: 0%;
+    left: 0%;
+    padding: 7px;
   }
 </style>
 
-<button on:click={leftClick} on:contextmenu|preventDefault={rightClick}>
+<button disabled={disabled} on:click={leftClick} on:contextmenu|preventDefault={rightClick} class:ticked={value === "tick"}  class:crossed={value === "cross"}>
   {#if value === "cross"}
     <div class="cross">
       <FontAwesomeIcon icon={faTimes} style="vertical-align: 0; height: 100%; width: 100%;"/>

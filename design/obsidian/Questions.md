@@ -73,11 +73,9 @@ Mission Statement:
 - I can't work on a project that doesn't interest me
 	- Agree -> disagree
 - I'd rather release the product \_\_\_\_\_\_\_\_
-	- Late -> Unfinished
+	- Late -> Full of bugs
 - I'd be happy if every day was the same
 	- Agree -> disagree
-
-> Journey vs Destination Motivation:
 - I'd rather work on one big feature than lots of small ones
 	- Agree -> disagree
 - I'd rather work on \_\_\_\_\_\_\_ Software

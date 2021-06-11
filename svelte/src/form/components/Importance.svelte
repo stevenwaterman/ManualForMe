@@ -1,6 +1,6 @@
 <script lang="ts">
   import { faExclamationCircle, faBan } from '@fortawesome/free-solid-svg-icons';
-  import ToggleIcon from './toggleIcon.svelte';
+  import ToggleIcon from './ToggleIcon.svelte';
 
   export let importance: "low" | "mid" | "high" = "mid";
   export let size: string;

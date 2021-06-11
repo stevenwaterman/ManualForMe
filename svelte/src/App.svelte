@@ -3,9 +3,10 @@
   import Home from "./home/index.svelte";
   import AuthSuccess from './authSuccess/index.svelte';
   import NotFound from "./notFound/index.svelte";
-  import MatrixQuestion from "./questions/matrixQuestion/index.svelte";
   import cssVars from 'svelte-css-vars';
   import { colors } from './colors';
+  import Section from "./form/Section.svelte";
+  import { intrinsicExtrinsic } from "./form/questions/motivators";
 
   let value: number;
 </script>
@@ -28,7 +29,9 @@
     <Router>
       <Route path="/" component={Home}/>
       <Route path="authSuccess" component={AuthSuccess}/>
-      <Route path="form" component={MatrixQuestion}/>
+      <Route path="form">
+        <Section section={intrinsicExtrinsic}/>
+      </Route>
       <Route component={NotFound}/>
     </Router>
   </div>

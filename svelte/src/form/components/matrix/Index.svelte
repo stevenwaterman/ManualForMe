@@ -1,6 +1,6 @@
 <script lang="ts">
   import cssVars from "svelte-css-vars"
-  import ThreeStateButton from "./threeStateButton.svelte";
+  import ThreeStateButton from "./ThreeStateButton.svelte";
   export let xValues: string[];
   export let yValues: string[];
 
@@ -33,7 +33,7 @@
 <style>
   .grid {
     display: inline-grid;
-    grid-template-columns: 100px repeat(var(--xCount), auto);
+    grid-template-columns: 100px repeat(var(--xCount), 1fr);
     gap: 1em;
     align-items: center;
     justify-items: center;
@@ -46,6 +46,7 @@
     background-color: var(--background);
     padding: 0.5em;
     z-index: 1;
+    border-bottom: 1px solid var(--border);
   }
 </style>
 

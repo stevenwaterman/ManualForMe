@@ -1,6 +1,6 @@
 <script lang="ts">
   import cssVars from 'svelte-css-vars';
-  import Slider from './circleRangeInput.svelte';
+  import Slider from './CircleRangeInput.svelte';
 
   export let sliderValue: number;
   export let sliderMaxWidthPerecent: number = 50;
@@ -43,10 +43,14 @@
     circleRadius: cssCircleRadius
   }
 
-  const labels = {
-    min: "Alone",
+  export let labels: {
+    left?: string;
+    mid?: string;
+    right?: string;
+  } = {
+    left: "Alone",
     mid: "Balanced",
-    max: "With others"
+    right: "With others"
   }
 
   // TODO make the SPAN elements into labels
@@ -96,13 +100,13 @@
 <div class="column">
   <div class="labels" use:cssVars={css}>
     <span class="anchor left">
-      {labels.min}
+      {labels.left}
     </span>
     <span class="anchor middle">
       {labels.mid}
     </span>
     <span class="anchor right">
-      {labels.max}
+      {labels.right}
     </span>
   </div>
     <Slider
